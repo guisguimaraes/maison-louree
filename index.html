@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#12100d">
+  <title>Maison Lourée — L’art de se souvenir</title>
+  <meta name="description" content="Rose Dorée e Lourée Noir. Duas expressões da Maison Lourée.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2312100d'/%3E%3Ctext x='20' y='48' fill='%23d8b575' font-size='46' font-family='serif'%3EL%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@300;400;500&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="./assets/index-Z_tt6BpC.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-Cp74pUu_.css">
+</head>
+<body class="is-loading">
+
+  <!-- Carregamento -->
+  <div id="loader" aria-hidden="true">
+    <div class="loader-mark">
+      <svg class="laurel" viewBox="0 0 200 200" fill="currentColor" aria-hidden="true"></svg>
+      <span class="loader-l">L</span>
+    </div>
+    <div class="loader-foot">
+      <span>Maison Lourée</span>
+      <span id="loaderCount">000</span>
+    </div>
+    <div class="loader-bar"><i id="loaderBar"></i></div>
+  </div>
+
+  <!-- Cena 3D (fixa atrás das seções transparentes) -->
+  <canvas id="stage" aria-hidden="true"></canvas>
+  <div class="stage-shade" aria-hidden="true"></div>
+
+  <header id="header">
+    <a class="brand fx-fade" href="#inicio" aria-label="Maison Lourée, início">MAISON LOURÉE<span>PARFUMS</span></a>
+    <nav aria-label="Principal">
+      <a class="fx-fade" href="#colecao">A coleção</a>
+      <a class="fx-fade" href="#maison">A maison</a>
+      <a class="fx-fade" href="#detalhes">Os frascos</a>
+    </nav>
+    <button id="menuToggle" class="fx-fade" aria-expanded="false" aria-controls="menu" aria-label="Abrir menu"><span></span><span></span></button>
+  </header>
+
+  <div id="menu" hidden>
+    <a href="#inicio">Início</a>
+    <a href="#colecao">A coleção</a>
+    <a href="#maison">A maison</a>
+    <a href="#detalhes">Os frascos</a>
+  </div>
+
+  <main>
+    <!-- 01 Abertura -->
+    <section class="hero" id="inicio">
+      <div class="hero-copy">
+        <p class="eyebrow fx-fade">Eau de Parfum</p>
+        <h1 class="split">O invisível.<br>O <em>inesquecível.</em></h1>
+        <p class="hero-description fx-fade">Há presenças que ficam.<br>Mesmo depois da despedida.</p>
+        <a class="line-link fx-fade" href="#colecao">Descubra a coleção <span class="line"></span></a>
+      </div>
+      <div class="hero-bottom fx-fade">
+        <span>L’art de se souvenir</span>
+        <a href="#manifesto"><i class="scroll-line"></i>Role para sentir</a>
+        <span class="chapter">01 / 04</span>
+      </div>
+      <div class="tag tag-rose fx-fade" aria-hidden="true"><i></i><span>Rose Dorée</span></div>
+      <div class="tag tag-noir fx-fade" aria-hidden="true"><i></i><span>Lourée Noir</span></div>
+    </section>
+
+    <!-- 02 Manifesto -->
+    <section id="manifesto" class="manifesto">
+      <span class="eyebrow">A essência do que permanece</span>
+      <h2 class="words">Algumas memórias não se veem. <em>Se sentem.</em></h2>
+      <div class="manifesto-foot">
+        <span class="monogram">L</span>
+        <p>Um perfume é um gesto íntimo.<br>Uma forma de estar, de chegar, de permanecer.<br>Descubra duas expressões da Maison Lourée.</p>
+      </div>
+    </section>
+
+    <!-- 03 Coleção (cena 3D presa) -->
+    <section id="colecao" class="collection">
+      <div class="collection-pin">
+        <div class="collection-heading">
+          <span class="eyebrow">A coleção</span>
+          <div class="collection-index"><span id="collectionIndex">01</span><span class="small-divider"><i id="collectionBar"></i></span><span>02</span></div>
+        </div>
+        <span class="giant-word" id="giantRose" aria-hidden="true">Dorée</span>
+        <span class="giant-word" id="giantNoir" aria-hidden="true">Noir</span>
+
+        <article class="perfume" id="copyRose">
+          <span class="eyebrow">Rose Dorée · Feminino</span>
+          <h2>O lado<br><em>luminoso.</em></h2>
+          <p>Um encontro entre luz e delicadeza.<br>Um nome para guardar na memória.</p>
+          <div class="product-meta"><span>Eau de Parfum</span><span>50 ml</span></div>
+          <a class="line-link" href="#detalhes" data-focus="rose">Ver o frasco de perto <span class="line"></span></a>
+        </article>
+
+        <article class="perfume" id="copyNoir">
+          <span class="eyebrow">Lourée Noir · Masculino</span>
+          <h2>A força<br><em>do mistério.</em></h2>
+          <p>Presença que dispensa palavras.<br>Elegância que encontra o seu próprio tempo.</p>
+          <div class="product-meta"><span>Eau de Parfum</span><span>50 ml</span></div>
+          <a class="line-link" href="#detalhes" data-focus="noir">Ver o frasco de perto <span class="line"></span></a>
+        </article>
+      </div>
+    </section>
+
+    <!-- 04 A maison -->
+    <section class="maison" id="maison">
+      <figure class="maison-image">
+        <div class="maison-frame"><img src="img/duo.webp" alt="Os dois perfumes Maison Lourée sobre pedra clara, sob luz de sol" loading="lazy" data-parallax=".1"></div>
+        <figcaption>Rose Dorée &amp; Lourée Noir</figcaption>
+      </figure>
+      <div class="maison-copy">
+        <span class="eyebrow reveal">O universo Maison Lourée</span>
+        <h2 class="reveal">Duas expressões.<br>Uma arte de<br><em>permanecer.</em></h2>
+        <p class="reveal">A luz do dourado. A profundidade do vinho. O contraste do preto. Cada detalhe faz parte de uma mesma assinatura.</p>
+        <p class="reveal">Rose Dorée e Lourée Noir traduzem esse encontro em duas silhuetas. Descubra a sua, de perto.</p>
+      </div>
+    </section>
+
+    <!-- 05 Os frascos (3D interativo) -->
+    <section class="details" id="detalhes">
+      <div class="details-top">
+        <span class="eyebrow">Um outro olhar</span>
+        <h2>O encanto está<br><em>nos detalhes.</em></h2>
+      </div>
+      <div class="details-hint" id="dragHint"><span class="drag-dot"></span>Arraste para girar</div>
+      <div class="detail-options" role="group" aria-label="Escolha um frasco">
+        <button data-focus="rose" aria-pressed="false"><span class="frame-btn">Rose Dorée</span></button>
+        <button data-focus="both" aria-pressed="true"><span class="frame-btn">Os dois</span></button>
+        <button data-focus="noir" aria-pressed="false"><span class="frame-btn">Lourée Noir</span></button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-top">
+      <a class="brand" href="#inicio">MAISON LOURÉE<span>PARFUMS</span></a>
+      <a href="#inicio" class="back-top">Voltar ao início</a>
+    </div>
+    <p class="footer-motto">L’art de <em>se souvenir.</em></p>
+    <div class="footer-bottom">
+      <span>© <span id="year">2026</span> Maison Lourée</span>
+      <span>Rose Dorée · Lourée Noir</span>
+      <span>Eau de Parfum</span>
+    </div>
+  </footer>
+
+
+</body>
+</html>
