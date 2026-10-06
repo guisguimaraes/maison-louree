@@ -1,0 +1,271 @@
+:root {
+  --ink: #12100d;
+  --ink-2: #1b1712;
+  --cream: #eee4d4;
+  --cream-muted: #cfbfaa;
+  --gold: #c5a67a;
+  --gold-light: #e2c9a0;
+  --gold-deep: #855b3d;
+  --wine: #6a2240;
+  --noir: #241d26;
+  --line: rgba(234, 218, 182, .14);
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'Manrope', Arial, sans-serif;
+  --ease: cubic-bezier(.22, .61, .2, 1);
+}
+
+* { box-sizing: border-box; }
+html { scroll-padding-top: 80px; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+body.is-loading { overflow: hidden; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; padding: 0; }
+a:focus-visible, button:focus-visible { outline: 1px solid var(--gold); outline-offset: 8px; }
+img { display: block; width: 100%; height: 100%; object-fit: cover; }
+h1, h2, p, figure { margin: 0; }
+h1, h2 { font-family: var(--serif); font-weight: 300; }
+em { font-style: italic; font-weight: 300; }
+p { line-height: 1.85; }
+.eyebrow { font: 500 11px/1.7 var(--sans); letter-spacing: .24em; text-transform: uppercase; color: var(--gold); }
+
+/* ---------- Carregamento ---------- */
+#loader {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--ink);
+  display: grid; place-items: center;
+  clip-path: inset(0 0 0 0);
+}
+.loader-mark { position: relative; width: 132px; height: 132px; color: var(--gold); }
+.loader-mark .laurel { position: absolute; inset: 0; width: 100%; height: 100%; }
+.loader-mark .laurel path { opacity: 0; }
+.loader-l {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font: 300 64px/1 var(--serif); color: var(--gold-light);
+  padding-bottom: 14px;
+}
+.loader-foot {
+  position: absolute; left: 5%; right: 5%; bottom: 40px;
+  display: flex; justify-content: space-between; align-items: flex-end;
+  font: 300 11px var(--sans); letter-spacing: .3em; text-transform: uppercase; color: var(--cream-muted);
+}
+#loaderCount { font: 300 64px/.8 var(--serif); letter-spacing: 0; color: var(--cream); font-variant-numeric: tabular-nums; }
+.loader-bar { position: absolute; left: 5%; right: 5%; bottom: 26px; height: 1px; background: var(--line); }
+.loader-bar i { display: block; height: 100%; width: 100%; background: var(--gold); transform-origin: left; transform: scaleX(0); }
+
+/* ---------- Cena 3D ---------- */
+#stage {
+  position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100lvh;
+  display: block; z-index: 0;
+  touch-action: pan-y;
+}
+.stage-shade {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(18,16,13,.72) 0%, rgba(18,16,13,.32) 34%, transparent 56%);
+  transition: opacity 1s var(--ease);
+}
+body.scene-details .stage-shade { opacity: 0; }
+
+/* ---------- Topo ---------- */
+header {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100px;
+  padding: 0 5%; z-index: 30;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: height .5s var(--ease), background .5s;
+}
+header::after {
+  content: ''; position: absolute; left: 5%; right: 5%; bottom: 0; height: 1px;
+  background: var(--line); transform-origin: left; transform: scaleX(var(--hl, 0));
+  transition: transform 1.4s var(--ease);
+}
+header.scrolled { height: 74px; background: rgba(18,16,13,.86); backdrop-filter: blur(14px); }
+.brand { font: 500 21px var(--serif); letter-spacing: .16em; display: block; text-align: center; line-height: 1; }
+.brand span { display: block; font: 400 9px var(--sans); letter-spacing: .46em; margin-top: 7px; color: var(--cream-muted); }
+nav { display: flex; align-items: center; gap: 40px; font-size: 13px; letter-spacing: .02em; }
+nav a { position: relative; padding: 10px 0; }
+nav a::after { content: ''; position: absolute; bottom: 2px; left: 0; width: 100%; height: 1px; background: var(--gold); transform: scaleX(0); transform-origin: right; transition: transform .5s var(--ease); }
+nav a:hover::after { transform: scaleX(1); transform-origin: left; }
+#menuToggle { width: 44px; height: 44px; display: none; padding: 12px 8px; }
+#menuToggle span { display: block; height: 1px; background: currentColor; margin: 6px 0; transition: transform .4s var(--ease); }
+#menuToggle[aria-expanded="true"] span:first-child { transform: translateY(3.5px) rotate(45deg); }
+#menuToggle[aria-expanded="true"] span:last-child { transform: translateY(-3.5px) rotate(-45deg); }
+#menu { position: fixed; inset: 0; background: var(--ink); z-index: 25; padding: 140px 8% 40px; }
+#menu:not([hidden]) { display: flex; flex-direction: column; justify-content: center; gap: 22px; }
+#menu a { font: 300 44px var(--serif); }
+
+/* ---------- Abertura ---------- */
+main { position: relative; z-index: 1; }
+.hero { height: 100svh; min-height: 680px; position: relative; }
+.hero-copy { position: absolute; left: 8%; top: 30%; max-width: 640px; }
+.hero-copy > .eyebrow { margin-bottom: 26px; }
+h1 { font-size: clamp(64px, 7.4vw, 128px); line-height: .98; letter-spacing: -.045em; }
+h1 em { color: var(--gold-light); }
+.split .w { display: inline-block; overflow: hidden; vertical-align: top; padding: 0 .04em .12em; margin: 0 -.04em -.12em; }
+.split .w > span { display: inline-block; transform: translateY(110%); will-change: transform; }
+.hero-description { font-size: 15px; color: var(--cream-muted); margin-top: 30px; }
+.line-link { display: inline-flex; gap: 22px; align-items: center; padding: 13px 0; font-size: 14px; letter-spacing: .02em; }
+.line-link .line { width: 64px; height: 1px; background: currentColor; position: relative; overflow: hidden; transition: width .5s var(--ease); }
+.line-link .line::after { content: ''; position: absolute; inset: 0; background: var(--gold); transform: translateX(-101%); transition: transform .6s var(--ease); }
+.line-link:hover .line { width: 96px; }
+.line-link:hover .line::after { transform: translateX(0); }
+.hero .line-link { margin-top: 26px; color: #efdebe; }
+.hero-bottom {
+  position: absolute; bottom: 34px; left: 5%; right: 5%;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--cream-muted);
+}
+.hero-bottom a { font-size: 12px; letter-spacing: .04em; text-transform: none; display: flex; gap: 14px; align-items: center; color: var(--cream); }
+.scroll-line { width: 1px; height: 34px; background: linear-gradient(transparent, var(--gold)); transform-origin: top; animation: drip 2.4s var(--ease) infinite; }
+@keyframes drip { 0% { transform: scaleY(0); transform-origin: top; } 45% { transform: scaleY(1); transform-origin: top; } 55% { transform: scaleY(1); transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
+.fx-fade { opacity: 0; }
+
+/* Etiquetas sobre os frascos (posição vem do 3D) */
+.tag {
+  position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none;
+  display: flex; align-items: center; gap: 12px;
+  font: 400 italic 17px var(--serif); color: var(--cream); letter-spacing: .01em;
+  white-space: nowrap; will-change: transform;
+}
+.tag i { width: 42px; height: 1px; background: var(--gold); display: block; }
+.tag-rose { flex-direction: row-reverse; }
+
+/* ---------- Manifesto ---------- */
+.manifesto {
+  padding: 170px 10% 150px; text-align: center; position: relative;
+  background: var(--cream); color: var(--ink); z-index: 2;
+}
+.manifesto > .eyebrow { color: #806245; }
+.manifesto h2 { font-size: clamp(50px, 6.2vw, 100px); line-height: 1.04; letter-spacing: -.035em; margin: 40px auto 64px; max-width: 12ch; }
+.manifesto h2 em { color: var(--gold-deep); }
+.words .wd { opacity: .13; transition: opacity .25s linear; }
+.manifesto-foot { display: flex; justify-content: center; align-items: center; gap: 40px; text-align: left; }
+.monogram { font: 300 92px/1 var(--serif); border-right: 1px solid rgba(157,136,115,.37); padding-right: 40px; color: #8c6b46; }
+.manifesto-foot p { font-size: 14px; color: #6a5b4a; }
+
+/* ---------- Coleção ---------- */
+.collection { height: 360vh; position: relative; }
+.collection-pin { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+.collection-heading {
+  position: absolute; top: 118px; left: 8%; right: 5%;
+  display: flex; justify-content: space-between; align-items: center; z-index: 3;
+}
+.collection-index { display: flex; align-items: center; gap: 14px; font: 300 13px var(--sans); font-variant-numeric: tabular-nums; }
+.small-divider { width: 64px; height: 1px; background: rgba(214,192,165,.3); overflow: hidden; }
+.small-divider i { display: block; height: 100%; background: var(--gold); transform-origin: left; transform: scaleX(0); }
+.giant-word {
+  position: absolute; right: -2vw; bottom: -4vw; z-index: 0; pointer-events: none;
+  font: 300 italic clamp(160px, 26vw, 460px)/.8 var(--serif); letter-spacing: -.05em;
+  color: transparent; -webkit-text-stroke: 1px rgba(226,201,160,.16);
+  opacity: 0; will-change: transform, opacity;
+}
+.perfume {
+  position: absolute; left: 8%; top: 50%; transform: translateY(-50%);
+  max-width: 440px; z-index: 2; opacity: 0; pointer-events: none;
+}
+.perfume.active { pointer-events: auto; }
+.perfume .eyebrow { display: block; margin-bottom: 26px; }
+.perfume h2 { font-size: clamp(58px, 6vw, 104px); line-height: .98; letter-spacing: -.04em; margin-bottom: 30px; }
+.perfume h2 em { color: var(--gold-light); }
+.perfume p { color: var(--cream-muted); font-size: 15px; }
+.product-meta { display: flex; gap: 0; margin: 30px 0 14px; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--cream-muted); }
+.product-meta span + span::before { content: ''; display: inline-block; width: 28px; height: 1px; background: var(--gold); vertical-align: middle; margin: 0 16px; }
+#copyRose h2 em { color: #e8b4bf; }
+
+/* ---------- A maison ---------- */
+.maison {
+  position: relative; z-index: 2; background: var(--ink-2);
+  display: grid; grid-template-columns: 1.05fr .95fr; gap: 7vw; align-items: center;
+  padding: 160px 8% 160px 0;
+}
+.maison-image { position: relative; }
+.maison-frame { height: 84vh; min-height: 560px; overflow: hidden; clip-path: inset(0 100% 0 0); }
+.maison-frame img { height: 120%; margin-top: -10%; transform: scale(1.12); transform-origin: center; }
+.maison-image figcaption { position: absolute; left: 8%; bottom: 28px; font-size: 10px; letter-spacing: .26em; text-transform: uppercase; color: #fff; }
+.maison-copy h2 { font-size: clamp(48px, 5vw, 86px); line-height: 1.02; letter-spacing: -.035em; margin: 28px 0 40px; }
+.maison-copy h2 em { color: var(--gold-light); }
+.maison-copy p { color: var(--cream-muted); font-size: 15px; max-width: 44ch; }
+.maison-copy p + p { margin-top: 18px; }
+.reveal { opacity: 0; transform: translateY(26px); }
+
+/* ---------- Os frascos ---------- */
+.details { position: relative; height: 100svh; min-height: 680px; }
+.details-top { position: absolute; top: 140px; left: 8%; }
+.details-top h2 { font-size: clamp(48px, 5vw, 86px); line-height: 1.02; letter-spacing: -.035em; margin-top: 22px; }
+.details-top h2 em { color: var(--gold-light); }
+.details-hint {
+  position: absolute; left: 50%; bottom: 128px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--cream-muted);
+  transition: opacity .6s;
+}
+.details-hint.gone { opacity: 0; }
+.drag-dot { width: 26px; height: 26px; border: 1px solid var(--gold); border-radius: 50%; position: relative; }
+.drag-dot::after { content: ''; position: absolute; inset: 9px; border-radius: 50%; background: var(--gold); animation: nudge 2.6s var(--ease) infinite; }
+@keyframes nudge { 0%, 100% { transform: translateX(-6px); } 50% { transform: translateX(6px); } }
+.detail-options { position: absolute; left: 50%; bottom: 48px; transform: translateX(-50%); display: flex; gap: 14px; }
+
+/* Botão com moldura dourada (filete + contorno externo, como as caixas) */
+.detail-options button { padding: 3px; border: 1px solid rgba(197,166,122,.32); }
+.frame-btn {
+  display: block; position: relative; overflow: hidden;
+  padding: 13px 26px; border: 1px solid var(--gold);
+  font: 500 13px var(--serif); letter-spacing: .26em; text-transform: uppercase; white-space: nowrap;
+  transition: color .5s var(--ease);
+}
+.frame-btn::before { content: ''; position: absolute; inset: 0; background: var(--gold); transform: translateY(101%); transition: transform .55s var(--ease); z-index: -1; }
+.frame-btn { isolation: isolate; }
+.detail-options button:hover .frame-btn, .detail-options button[aria-pressed="true"] .frame-btn { color: var(--ink); }
+.detail-options button:hover .frame-btn::before, .detail-options button[aria-pressed="true"] .frame-btn::before { transform: translateY(0); }
+
+/* ---------- Rodapé ---------- */
+footer { position: relative; z-index: 2; background: var(--ink); padding: 90px 5% 36px; border-top: 1px solid var(--line); }
+.footer-top { display: flex; justify-content: space-between; align-items: center; }
+.back-top { font-size: 13px; color: var(--cream-muted); }
+.footer-motto { font: 300 clamp(56px, 10vw, 170px)/1 var(--serif); letter-spacing: -.04em; margin: 90px 0 70px; }
+.footer-motto em { color: var(--gold-light); }
+.footer-bottom { display: flex; justify-content: space-between; gap: 20px; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--cream-muted); border-top: 1px solid var(--line); padding-top: 26px; }
+
+/* ---------- Celular ---------- */
+@media (max-width: 860px) {
+  nav { display: none; }
+  #menuToggle { display: block; }
+  header { height: 78px; }
+  .stage-shade { background: linear-gradient(0deg, rgba(18,16,13,.9) 0%, rgba(18,16,13,.55) 38%, transparent 62%); }
+  .hero-copy { left: 6%; right: 6%; top: auto; bottom: 108px; }
+  h1 { font-size: clamp(50px, 14vw, 72px); }
+  .hero-description { margin-top: 18px; font-size: 14px; }
+  .hero .line-link { margin-top: 10px; }
+  .hero-bottom { bottom: 24px; }
+  .hero-bottom > span:first-child { display: none; }
+  .tag { display: none; }
+  .manifesto { padding: 120px 7% 110px; }
+  .manifesto-foot { flex-direction: column; text-align: center; gap: 24px; }
+  .monogram { border-right: 0; padding-right: 0; }
+  .collection-heading { top: 96px; left: 6%; right: 6%; }
+  .perfume { left: 6%; right: 6%; top: auto; bottom: 48px; transform: none; }
+  .perfume h2 { font-size: clamp(46px, 12vw, 64px); margin-bottom: 18px; }
+  .perfume p { font-size: 14px; line-height: 1.7; }
+  .product-meta { margin: 18px 0 4px; }
+  .giant-word { bottom: auto; top: 20vh; }
+  .maison { grid-template-columns: 1fr; padding: 0 0 110px; gap: 60px; }
+  .maison-frame { height: 70vh; min-height: 420px; }
+  .maison-copy { padding: 0 7%; }
+  .details-top { top: 104px; left: 6%; right: 6%; }
+  .details-hint { bottom: 112px; }
+  .detail-options { gap: 6px; bottom: 36px; width: 92%; justify-content: center; }
+  .frame-btn { padding: 11px 12px; font-size: 11px; letter-spacing: .16em; }
+  .footer-bottom { flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-line, .drag-dot::after { animation: none; }
+}
