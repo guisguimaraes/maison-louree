@@ -1,0 +1,8 @@
+node_modules/
+dist/
+out/
+.DS_Store
+.env
+
+# atalhos locais das skills (apontam para .agents/skills e myskill neste computador)
+.claude/skills/
