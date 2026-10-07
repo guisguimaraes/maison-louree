@@ -41,7 +41,7 @@ const STATES = [
   { tgt: [0.0, 0.042, 0], az: 9, el: 10, dist: 0.6, shift: 0.25, key: '#ffd29a', keyI: 5.2, rim: '#ffb35c', rimI: 2.2, wall: '#3b2c1f', floor: '#21180f' },
   { tgt: [SPOTS.rose.x, 0.036, SPOTS.rose.z], az: -16, el: 6, dist: 0.37, shift: 0.24, key: '#ffcfb0', keyI: 5.0, rim: '#ff9f8a', rimI: 2.4, wall: '#3e2125', floor: '#221012' },
   { tgt: [SPOTS.noir.x, 0.04, SPOTS.noir.z], az: 22, el: 7, dist: 0.4, shift: 0.24, key: '#ffcf8a', keyI: 4.6, rim: '#ffb050', rimI: 2.8, wall: '#1f1b1c', floor: '#141011' },
-  { tgt: [0.0, 0.012, 0.0], az: -3, el: 38, dist: 0.5, shift: 0.14, key: '#ffd8a8', keyI: 5.2, rim: '#ffb35c', rimI: 2.3, wall: '#33271c', floor: '#1d150e' },
+  { tgt: [0.0, 0.012, 0.0], az: -3, el: 38, dist: 0.56, shift: 0.21, key: '#ffd8a8', keyI: 5.2, rim: '#ffb35c', rimI: 2.3, wall: '#33271c', floor: '#1d150e' },
 ];
 
 export class Stage {
