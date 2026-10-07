@@ -210,7 +210,7 @@ export class Spray {
       const size = 0.01 + p.grow * (1 - Math.exp(-p.life * 0.9));
       p.s.scale.setScalar(size);
       p.s.material.rotation += p.spin * dt;
-      p.s.material.opacity = 0.11 * Math.min(1, p.life * 3) * Math.pow(1 - L, 1.3);
+      p.s.material.opacity = 0.085 * Math.min(1, p.life * 3) * Math.pow(1 - L, 1.3);
     }
   }
 

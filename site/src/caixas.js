@@ -2,6 +2,8 @@
    a outra caixa sai de cena, o frasco se levanta e borrifa, e uma voz diz
    "Sinta a fragrância" (feminina no Rose Dorée, masculina no Lourée Noir). */
 
+import { fly } from './fly.js';
+
 const BASE = import.meta.env.BASE_URL;
 
 const INFO = {
@@ -70,6 +72,7 @@ export function initCaixas({ stage }) {
     section.classList.remove('borrifando');
     void section.offsetWidth;
     section.classList.add('borrifando');
+    fly($('#sentirFrase'), { delay: 200, duration: 1700 });
     later(() => {
       const voz = vozes[p];
       voz.currentTime = 0;
@@ -91,7 +94,10 @@ export function initCaixas({ stage }) {
     if (view === p) { borrifar(); return; }
     clear();
     view = p;
-    $('#sentirNome').textContent = INFO[p].nome;
+    const nome = $('#sentirNome');
+    nome.textContent = INFO[p].nome;
+    delete nome.dataset.split;
+    fly(nome, { delay: 1400, duration: 1700 });
     $('#sentirLinha').textContent = INFO[p].linha;
     stage.resetSpray();
     stage.focus = p;

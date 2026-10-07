@@ -2,6 +2,7 @@ import Lenis from 'lenis';
 import { animate, stagger } from 'animejs';
 import { Stage } from './scene.js';
 import { initCaixas } from './caixas.js';
+import { fly, showChars, splitChars, flyOnView } from './fly.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -36,7 +37,8 @@ function splitWords(el, cls) {
   };
   walk(el);
 }
-$$('.split').forEach((el) => splitWords(el, 'w'));
+$$('[data-fly]').forEach((el) => splitChars(el));
+flyOnView();
 $$('.words').forEach((el) => splitWords(el, 'wd'));
 
 /* ---------- rolagem suave ---------- */
@@ -136,8 +138,12 @@ function updateCollection(y) {
   const base = innerWidth > 860 ? 'translateY(-50%) ' : '';
   copyRose.style.transform = `${base}translateY(${p < 0.2 ? lift(ra) : -lift(ra)}px)`;
   copyNoir.style.transform = `${base}translateY(${p < 0.8 ? lift(na) : -lift(na)}px)`;
-  copyRose.classList.toggle('active', ra > 0.5);
-  copyNoir.classList.toggle('active', na > 0.5);
+  for (const [el, a] of [[copyRose, ra], [copyNoir, na]]) {
+    const on = a > 0.5;
+    // o nome do perfume se monta letra a letra toda vez que entra
+    if (on && !el.classList.contains('active')) fly(el.querySelector('h2'), { duration: 1600 });
+    el.classList.toggle('active', on);
+  }
   giantRose.style.opacity = ra;
   giantNoir.style.opacity = na;
   giantRose.style.transform = `translateX(${(p - 0.15) * -30}vw)`;
@@ -201,7 +207,7 @@ function revealHero() {
   const header = $('#header');
   header.style.setProperty('--hl', 1);
   animate('#header .brand, #header nav a, #menuToggle', { opacity: [0, 1], translateY: [-10, 0], duration: 1200, delay: stagger(90), ease: 'outQuart' });
-  animate('.hero h1 .w > span', { translateY: ['110%', '0%'], duration: 1400, delay: stagger(110, { start: 150 }), ease: 'outExpo' });
+  fly($('.hero h1'), { delay: 150, duration: 2200 });
   animate('.hero .eyebrow', { opacity: [0, 1], translateY: [12, 0], duration: 1000, ease: 'outQuart' });
   animate('.hero-description, .hero .line-link', { opacity: [0, 1], translateY: [16, 0], duration: 1200, delay: stagger(140, { start: 750 }), ease: 'outQuart' });
   animate('.hero-bottom', { opacity: [0, 1], duration: 1400, delay: 1100, ease: 'outQuart' });
@@ -211,7 +217,7 @@ function revealHero() {
 
 function instantHero() {
   $$('.fx-fade').forEach((el) => { el.style.opacity = 1; });
-  $$('.hero h1 .w > span').forEach((el) => { el.style.transform = 'none'; });
+  showChars($('.hero h1'));
   $('#header').style.setProperty('--hl', 1);
   tagsOn = true;
 }

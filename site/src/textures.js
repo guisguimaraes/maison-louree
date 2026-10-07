@@ -107,7 +107,7 @@ export function makeLabel(key, anisotropy) {
 }
 
 /* ------------------------------------------------------------------
-   Mármore branco (Carrara): ruído fractal + veios finos acinzentados.
+   Mármore negro: ruído fractal + veios finos dourados.
 ------------------------------------------------------------------- */
 
 function makeNoise(seed) {
@@ -159,9 +159,13 @@ export function makeMarble(anisotropy) {
       const vein = Math.pow(s1, 22) * (0.25 + n * 0.5) + Math.pow(s2, 50) * 0.22 + Math.pow(s1, 5) * 0.05;
       const shade = (cloud - 0.5) * 9;
       const i = (y * W + x) * 4;
-      d[i] = 226 + shade - vein * 62;
-      d[i + 1] = 223 + shade - vein * 60;
-      d[i + 2] = 218 + shade - vein * 52;
+      // mármore negro (Nero Marquina) com veios dourados
+      // veios finos (não brilham como luz) + um véu acinzentado bem leve
+      const gold = Math.pow(s1, 60) * (0.35 + n * 0.5) + Math.pow(s2, 110) * 0.3;
+      const haze = Math.pow(s1, 6) * 0.08;
+      d[i] = 22 + shade * 0.55 + cloud * 5 + haze * 40 + gold * 105;
+      d[i + 1] = 21 + shade * 0.5 + cloud * 4 + haze * 36 + gold * 82;
+      d[i + 2] = 20 + shade * 0.45 + haze * 30 + gold * 48;
       d[i + 3] = 255;
       rd[i] = 0;
       rd[i + 1] = 58 + vein * 70 + cloud * 20;
