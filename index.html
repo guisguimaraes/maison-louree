@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#12100d">
+  <meta name="theme-color" content="#1a1a1a">
   <title>Maison Lourée — L’art de se souvenir</title>
   <meta name="description" content="Rose Dorée e Lourée Noir. Duas expressões da Maison Lourée.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2312100d'/%3E%3Ctext x='20' y='48' fill='%23d8b575' font-size='46' font-family='serif'%3EL%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@300;400;500&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-C7r7Dg50.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-Dv2SFs3l.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Italiana&family=Manrope:wght@300;400;500&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="./assets/index-CYfeo5Vy.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CtjMAXth.css">
 </head>
 <body class="is-loading">
 
@@ -49,7 +49,7 @@
     <section class="hero" id="inicio">
       <div class="hero-copy">
         <p class="eyebrow fx-fade">Eau de Parfum</p>
-        <h1 class="split">O invisível.<br>O <em>inesquecível.</em></h1>
+        <h1 data-fly>O invisível.<br>O <em>inesquecível.</em></h1>
         <p class="hero-description fx-fade">Há presenças que ficam.<br>Mesmo depois da despedida.</p>
         <a class="line-link fx-fade" href="#colecao">Descubra a coleção <span class="line"></span></a>
       </div>
@@ -84,7 +84,7 @@
 
         <article class="perfume" id="copyRose">
           <span class="eyebrow">Rose Dorée · Feminino</span>
-          <h2>O lado<br><em>luminoso.</em></h2>
+          <h2 data-fly>O lado<br><em>luminoso.</em></h2>
           <p>Um encontro entre luz e delicadeza.<br>Um nome para guardar na memória.</p>
           <div class="product-meta"><span>Eau de Parfum</span><span>50 ml</span></div>
           <a class="line-link" href="#detalhes" data-focus="rose">Ver o frasco de perto <span class="line"></span></a>
@@ -92,7 +92,7 @@
 
         <article class="perfume" id="copyNoir">
           <span class="eyebrow">Lourée Noir · Masculino</span>
-          <h2>A força<br><em>do mistério.</em></h2>
+          <h2 data-fly>A força<br><em>do mistério.</em></h2>
           <p>Presença que dispensa palavras.<br>Elegância que encontra o seu próprio tempo.</p>
           <div class="product-meta"><span>Eau de Parfum</span><span>50 ml</span></div>
           <a class="line-link" href="#detalhes" data-focus="noir">Ver o frasco de perto <span class="line"></span></a>
@@ -108,7 +108,7 @@
       </figure>
       <div class="maison-copy">
         <span class="eyebrow reveal">O universo Maison Lourée</span>
-        <h2 class="reveal">Duas expressões.<br>Uma arte de<br><em>permanecer.</em></h2>
+        <h2 data-fly data-fly-view>Duas expressões.<br>Uma arte de<br><em>permanecer.</em></h2>
         <p class="reveal">A luz do dourado. A profundidade do vinho. O contraste do preto. Cada detalhe faz parte de uma mesma assinatura.</p>
         <p class="reveal">Rose Dorée e Lourée Noir traduzem esse encontro em duas silhuetas. Descubra a sua, de perto.</p>
       </div>
@@ -117,14 +117,14 @@
     <!-- 05 As caixas: clique num perfume para senti-lo -->
     <section class="details" id="detalhes">
       <div class="details-top">
-        <h2>O encanto está<br><em>nos detalhes.</em></h2>
+        <h2 data-fly data-fly-view>O encanto está<br><em>nos detalhes.</em></h2>
         <p class="details-hint">Toque em um perfume para senti-lo.</p>
       </div>
 
       <div class="sentir" id="sentir" aria-live="polite">
         <span class="sentir-linha" id="sentirLinha"></span>
-        <h3 id="sentirNome"></h3>
-        <p class="sentir-frase" id="sentirFrase">Sinta a fragrância.</p>
+        <h3 id="sentirNome" data-fly></h3>
+        <p class="sentir-frase" id="sentirFrase" data-fly>Sinta a fragrância.</p>
         <div class="sentir-acoes">
           <button class="detail-btn" id="borrifar"><span class="frame-btn">Borrifar de novo</span></button>
           <button class="voltar" id="voltar">Voltar às duas caixas <span class="line"></span></button>
@@ -138,7 +138,7 @@
       <a class="brand" href="#inicio">MAISON LOURÉE<span>PARFUMS</span></a>
       <a href="#inicio" class="back-top">Voltar ao início</a>
     </div>
-    <p class="footer-motto">L’art de <em>se souvenir.</em></p>
+    <p class="footer-motto" data-fly data-fly-view>L’art de <em>se souvenir.</em></p>
     <div class="footer-bottom">
       <span>© <span id="year">2026</span> Maison Lourée</span>
       <span>Rose Dorée · Lourée Noir</span>
