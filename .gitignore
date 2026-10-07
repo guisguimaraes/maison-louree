@@ -6,3 +6,6 @@ out/
 
 # atalhos locais das skills (apontam para .agents/skills e myskill neste computador)
 .claude/skills/
+
+# pedidos gravados pelo servidor local
+site/data/

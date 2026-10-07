@@ -1,9 +1,10 @@
 /* ------------------------------------------------------------------
    Sacola e finalização da compra.
    A sacola fica guardada no navegador da pessoa (localStorage).
-   O pagamento e o frete ainda serão ligados a um sistema (Mercado Pago,
-   PagSeguro…): por enquanto a finalização coleta os dados e avisa que
-   o pagamento está em configuração. Nada é enviado a lugar nenhum.
+   Ao finalizar, os dados vão para o nosso servidor (server/index.js), que
+   recalcula o total, cria a cobrança no Asaas e devolve o link da página
+   segura de pagamento (Pix, cartão ou boleto). Os preços que valem são os
+   do servidor (server/catalogo.js); os daqui são só para mostrar.
 ------------------------------------------------------------------- */
 
 const BASE = import.meta.env.BASE_URL;
@@ -15,6 +16,8 @@ export const PRODUCTS = {
 
 const brl = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const KEY = 'maison-louree-sacola';
+// endereço da API relativo à página (funciona na raiz do domínio ou numa subpasta)
+const API = (p) => new URL(`api/${p}`, location.origin + location.pathname.replace(/[^/]*$/, '')).href;
 
 function load() {
   try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; }
@@ -26,6 +29,17 @@ function save(items) {
 export function initCart({ onOpen, onClose } = {}) {
   const $ = (s) => document.querySelector(s);
   let items = load(); // { rose: 2, noir: 1 }
+  // o que o servidor informa: frete fixo e se o pagamento está ativo
+  let cfg = { frete: 0, pagamento: false, online: false };
+  fetch(API('config')).then((r) => (r.ok ? r.json() : null)).then((c) => {
+    if (!c) return;
+    cfg = { ...c, online: true };
+    if (cfg.frete) {
+      $('#ckFrete').textContent = `Frete fixo para todo o Brasil: ${brl(cfg.frete)}.`;
+      $('#ckFreteV').textContent = brl(cfg.frete);
+    }
+    renderSummary();
+  }).catch(() => {});
 
   const btn = $('#sacolaBtn'), count = $('#sacolaN');
   const drawer = $('#sacola'), list = $('#sacolaLista'), total = $('#sacolaTotal');
@@ -78,7 +92,7 @@ export function initCart({ onOpen, onClose } = {}) {
       box.append(row);
     }
     $('#ckSub').textContent = brl(sum());
-    $('#ckTotal').textContent = brl(sum());
+    $('#ckTotal').textContent = brl(sum() + (cfg.frete || 0));
   }
 
   function add(k, q = 1) {
@@ -163,21 +177,66 @@ export function initCart({ onOpen, onClose } = {}) {
       }).catch(() => {});
     }
   });
+  const cpf = $('#ckCpf');
+  cpf.addEventListener('input', () => {
+    const d = cpf.value.replace(/\D/g, '').slice(0, 14);
+    cpf.value = d.length <= 11
+      ? d.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+      : d.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
+  });
   const tel = $('#ckTel');
   tel.addEventListener('input', () => {
     const d = tel.value.replace(/\D/g, '').slice(0, 11);
     tel.value = d.length > 6 ? `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}` : d.length > 2 ? `(${d.slice(0, 2)}) ${d.slice(2)}` : d;
   });
 
-  $('#ckForm').addEventListener('submit', (e) => {
+  const msg = $('#ckMsg');
+  const aviso = (t) => { msg.textContent = t; msg.hidden = false; msg.focus(); };
+  $('#ckForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.currentTarget;
     if (!form.reportValidity()) return;
-    // aqui entrará a chamada ao sistema de pagamento escolhido
-    const msg = $('#ckMsg');
-    msg.hidden = false;
-    msg.focus();
+    if (!cfg.online || !cfg.pagamento) {
+      aviso('O pagamento on-line está sendo configurado. Em breve você poderá concluir a compra por aqui.');
+      return;
+    }
+    const botao = form.querySelector('.ck-pagar');
+    const rotulo = botao.querySelector('.frame-btn');
+    botao.disabled = true;
+    rotulo.textContent = 'Gerando o pagamento…';
+    msg.hidden = true;
+    try {
+      const r = await fetch(API('checkout'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itens: items, cliente: Object.fromEntries(new FormData(form)) }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.pagamento) throw new Error(d.erro || 'Não foi possível iniciar o pagamento.');
+      location.href = d.pagamento; // página segura do Asaas
+    } catch (err) {
+      aviso(err.message);
+      botao.disabled = false;
+      rotulo.textContent = 'Ir para o pagamento';
+    }
   });
+
+  /* ---------- volta do pagamento: ?pedido=<id> ---------- */
+  const pedido = new URLSearchParams(location.search).get('pedido');
+  if (pedido) {
+    const box = $('#obrigado');
+    box.hidden = false;
+    items = {};
+    save(items);
+    history.replaceState(null, '', location.pathname + location.hash);
+    fetch(API(`pedido/${encodeURIComponent(pedido)}`)).then((r) => (r.ok ? r.json() : null)).then((p) => {
+      if (!p) return;
+      $('#obrigadoTxt').textContent = p.status === 'pago'
+        ? `Pagamento confirmado (${brl(p.total)}). Você vai receber os detalhes por e-mail.`
+        : 'Recebemos o seu pedido. Assim que o pagamento for confirmado, você recebe um e-mail.';
+    }).catch(() => {});
+    $('#obrigadoOk').addEventListener('click', () => { box.hidden = true; });
+  }
 
   render();
   return { add, open };

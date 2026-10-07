@@ -410,3 +410,13 @@ nav { margin-left: auto; }
 .compra-ok button { color: var(--cream); text-decoration: underline; text-underline-offset: 3px; margin-left: 4px; font-size: 12px; }
 /* nada passa da largura da tela (etiquetas que seguem o 3D) */
 html, body { overflow-x: clip; }
+
+.ck-cpf { max-width: 320px; }
+.ck-pagar:disabled { opacity: .6; cursor: progress; }
+/* volta do pagamento */
+.obrigado { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 24px; background: rgba(10,9,8,.82); backdrop-filter: blur(6px); }
+.obrigado-in { max-width: 460px; text-align: center; padding: 46px 40px; border: 1px solid rgba(185,154,98,.35); background: #171513; }
+.obrigado-in h2 { font-size: 34px; letter-spacing: .14em; margin-bottom: 18px; }
+.obrigado-in p { color: var(--cream-muted); line-height: 1.7; margin-bottom: 30px; }
+/* "hidden" sempre vence (algumas camadas usam display: grid/flex) */
+[hidden] { display: none !important; }

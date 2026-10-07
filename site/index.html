@@ -166,6 +166,7 @@
               <label>E-mail<input name="email" type="email" autocomplete="email" required></label>
               <label>Celular<input id="ckTel" name="celular" type="tel" inputmode="numeric" autocomplete="tel" placeholder="(00) 00000-0000" required></label>
             </div>
+            <label class="ck-cpf">CPF ou CNPJ<input id="ckCpf" name="cpfCnpj" inputmode="numeric" placeholder="000.000.000-00" required></label>
           </fieldset>
           <fieldset>
             <legend>Entrega</legend>
@@ -185,25 +186,34 @@
           </fieldset>
           <fieldset>
             <legend>Frete</legend>
-            <p class="ck-pendente">As opções de frete aparecem aqui assim que o CEP for informado. <em>Em configuração.</em></p>
+            <p class="ck-pendente" id="ckFrete">Frete a combinar após a compra.</p>
           </fieldset>
           <fieldset>
             <legend>Pagamento</legend>
-            <p class="ck-pendente">Pix, cartão de crédito e boleto. <em>Em configuração.</em></p>
+            <p class="ck-pendente" id="ckPag">Ao continuar, você vai para o ambiente seguro do <em>Asaas</em> e escolhe pagar com Pix, cartão de crédito ou boleto.</p>
           </fieldset>
           <button class="detail-btn ck-pagar" type="submit"><span class="frame-btn">Ir para o pagamento</span></button>
-          <p class="ck-msg" id="ckMsg" tabindex="-1" hidden>Seus dados estão certos. O pagamento on-line ainda está sendo configurado; em breve você poderá concluir a compra por aqui.</p>
+          <p class="ck-msg" id="ckMsg" tabindex="-1" role="alert" hidden></p>
         </form>
         <aside class="ck-resumo" aria-label="Resumo do pedido">
           <h3>Resumo</h3>
           <div id="ckItens"></div>
           <div class="sacola-linha"><span>Subtotal</span><span id="ckSub">R$ 0,00</span></div>
-          <div class="sacola-linha"><span>Frete</span><span>a calcular</span></div>
+          <div class="sacola-linha"><span>Frete</span><span id="ckFreteV">a combinar</span></div>
           <div class="sacola-linha ck-total"><span>Total</span><strong id="ckTotal">R$ 0,00</strong></div>
         </aside>
       </div>
     </div>
   </section>
+
+  <!-- volta do pagamento -->
+  <div class="obrigado" id="obrigado" role="dialog" aria-modal="true" aria-labelledby="obrigadoT" hidden>
+    <div class="obrigado-in">
+      <h2 id="obrigadoT">Obrigado</h2>
+      <p id="obrigadoTxt">Recebemos o seu pedido.</p>
+      <button class="detail-btn" id="obrigadoOk"><span class="frame-btn">Voltar ao site</span></button>
+    </div>
+  </div>
 
   <button class="som" id="som" aria-pressed="false" aria-label="Ligar música"><i></i><i></i><i></i><span>Som</span></button>
 
