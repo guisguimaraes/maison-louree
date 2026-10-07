@@ -25,7 +25,7 @@ function fade(audio, to, ms = 900) {
   audio._fade = requestAnimationFrame(step);
 }
 
-export function initCaixas({ stage }) {
+export function initCaixas({ stage, cart }) {
   const $ = (s) => document.querySelector(s);
   const section = $('#detalhes');
 
@@ -103,6 +103,7 @@ export function initCaixas({ stage }) {
     stage.focus = p;
     section.classList.remove('borrifando');
     section.classList.add('focado');
+    $('#compraOk').textContent = '';
     // espera a câmera chegar e a outra caixa sair
     later(() => stage.sprayBottle(p), 1500);
   }
@@ -127,6 +128,14 @@ export function initCaixas({ stage }) {
     section.style.cursor = stage.pick(...ndc(e)) ? 'pointer' : '';
   });
   $('#borrifar').addEventListener('click', borrifar);
+  // compra do perfume em foco
+  const ok = $('#compraOk');
+  $('#addCart').addEventListener('click', () => {
+    if (view === 'both') return;
+    cart.add(view);
+    ok.innerHTML = 'Adicionado à sacola. <button type="button">Ver sacola</button>';
+    ok.querySelector('button').addEventListener('click', () => cart.open());
+  });
   $('#voltar').addEventListener('click', voltar);
   addEventListener('keydown', (e) => { if (e.key === 'Escape' && view !== 'both') voltar(); });
 

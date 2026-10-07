@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#1a1a1a">
+  <title>Prévia das entradas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Italiana&family=Manrope:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css">
+  <style>
+    body { overflow: hidden; height: 100vh; }
+    #stage { position: fixed; inset: 0; }
+    .pv-layer { position: fixed; inset: 0; pointer-events: none; }
+    #fade { background: #000; opacity: 1; z-index: 5; }
+    #mask, #mist { z-index: 6; width: 100vw; height: 100vh; }
+    #selo { z-index: 7; background: #0c0b0a; display: grid; place-items: center; opacity: 0; }
+    #selo .sv { width: min(44vh, 70vw); aspect-ratio: 1; position: relative; will-change: transform; }
+    #selo svg { width: 100%; height: 100%; overflow: visible; }
+    .pv-brand { position: fixed; top: 34px; left: 0; right: 0; z-index: 8; text-align: center; font: 400 18px var(--display); letter-spacing: .3em; color: var(--cream); opacity: 0; transition: opacity 1.2s; }
+    .pv-brand.on { opacity: 1; }
+    .pv-copy { position: fixed; left: 8%; top: 50%; transform: translateY(-50%); z-index: 8; pointer-events: none; }
+    .pv-copy p { margin-top: 26px; color: var(--cream-muted); font-size: 15px; opacity: 0; transition: opacity 1.4s; }
+    .pv-copy.on p { opacity: 1; transition-delay: 1.4s; }
+    .pv-bar {
+      position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 20;
+      display: flex; gap: 6px; padding: 6px; background: rgba(20,18,16,.78); border: 1px solid rgba(185,154,98,.28);
+      backdrop-filter: blur(6px); flex-wrap: wrap; justify-content: center; max-width: calc(100vw - 32px);
+    }
+    .pv-bar button { padding: 10px 14px; font: 400 12px var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--cream-muted); border: 1px solid transparent; }
+    .pv-bar button:hover { color: var(--cream); }
+    .pv-bar button[aria-pressed="true"] { color: var(--ink); background: var(--gold); }
+    .pv-bar .rep { border-color: rgba(185,154,98,.4); }
+    .pv-note { position: fixed; top: 12px; right: 16px; z-index: 20; font-size: 11px; color: var(--cream-muted); letter-spacing: .08em; }
+    #pvLoad { position: fixed; inset: 0; display: grid; place-items: center; z-index: 30; background: #0c0b0a; font: 400 14px var(--display); letter-spacing: .3em; color: var(--cream-muted); }
+  </style>
+</head>
+<body>
+  <canvas id="stage"></canvas>
+  <div id="fade" class="pv-layer"></div>
+  <canvas id="mask" class="pv-layer"></canvas>
+  <canvas id="mist" class="pv-layer"></canvas>
+  <div id="selo" class="pv-layer"><div class="sv"></div></div>
+
+  <div class="pv-brand" id="pvBrand">MAISON LOURÉE</div>
+  <div class="pv-copy" id="pvCopy">
+    <h1 id="pvTitle">O invisível.<br>O <em>inesquecível.</em></h1>
+    <p>Há presenças que ficam. Mesmo depois da despedida.</p>
+  </div>
+
+  <div class="pv-note">Prévia · não altera o site</div>
+  <div class="pv-bar" role="group" aria-label="Escolha a entrada">
+    <button data-i="0">1 · A caixa</button>
+    <button data-i="1">2 · A luz</button>
+    <button data-i="2">3 · A gota</button>
+    <button data-i="3">4 · O borrifo</button>
+    <button data-i="4">5 · O selo</button>
+    <button class="rep" id="pvRep">Repetir</button>
+  </div>
+  <div id="pvLoad">CARREGANDO A CENA…</div>
+
+  <script type="module" src="/src/previa.js"></script>
+</body>
+</html>

@@ -3,6 +3,8 @@ import { animate, stagger } from 'animejs';
 import { Stage } from './scene.js';
 import { initCaixas } from './caixas.js';
 import { fly, showChars, splitChars, flyOnView } from './fly.js';
+import { createSeal } from './selo.js';
+import { initCart } from './cart.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -82,8 +84,9 @@ if (import.meta.env.DEV) window.__stage = stage;
 // modo de teste: #f=0.4 congela a câmera naquele ponto do túnel
 if (params.has('f')) Object.assign(stage.flight, { f: Number(params.get('f')), frozen: true });
 
-/* ---------- carregamento ---------- */
-const counter = $('#loaderCount');
+/* ---------- carregamento: o selo é gravado conforme o site carrega ---------- */
+stage.skipTunnel();
+const seal = skipIntro ? null : createSeal($('#loader'));
 let shown = 0;
 const loadStart = performance.now();
 function tickLoader() {
@@ -92,7 +95,7 @@ function tickLoader() {
   const target = Math.min(realProgress, timeCap);
   shown += (target - shown) * 0.12;
   if (target === 1 && shown > 0.995) shown = 1;
-  counter.textContent = String(Math.round(shown * 100)).padStart(3, '0');
+  seal?.setProgress(shown);
   return shown;
 }
 
@@ -178,7 +181,8 @@ function updateTags(t) {
 }
 
 /* ---------- as caixas: foco, borrifo, voz e música ---------- */
-const caixas = initCaixas({ stage });
+const cart = initCart({ onOpen: () => lenis.stop(), onClose: () => lenis.start() });
+const caixas = initCaixas({ stage, cart });
 if (import.meta.env.DEV) window.__caixas = caixas;
 addEventListener('pointermove', (e) => {
   stage.setPointer((e.clientX / innerWidth) * 2 - 1, -((e.clientY / innerHeight) * 2 - 1));
@@ -236,9 +240,9 @@ function frame(now) {
       phase = 'intro';
       if (skipIntro) leaveLoader();
       else {
-        // atravessa o túnel; a entrada da cena começa quando a câmera chega na tampa
-        animate('#loader .loader-foot', { opacity: [1, 0], duration: 900, ease: 'inOutCubic' });
-        stage.startFlight(leaveLoader);
+        // prensa o L, monta o nome e atravessa o selo até a tampa do Lourée Noir
+        $('#loader').classList.add('done');
+        seal.finish(throughSeal);
       }
     }
   }
@@ -268,17 +272,27 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
-function leaveLoader() {
+function leaveLoader(keep) {
   const loader = $('#loader');
-  const go = () => {
-    stage.playing = true;
-    document.body.classList.remove('is-loading');
-    lenis.start();
-    loader.remove();
-    if (skipIntro) { stage.skipTunnel(); stage.introT = 99; instantHero(); return; }
-    setTimeout(revealHero, 3600);
-  };
-  go();
+  stage.playing = true;
+  document.body.classList.remove('is-loading');
+  lenis.start();
+  if (!keep) loader.remove();
+  if (skipIntro) { stage.introT = 99; instantHero(); return; }
+  setTimeout(revealHero, 3600);
+}
+
+// a câmera atravessa o "L": o selo cresce a partir do centro da letra e some
+function throughSeal() {
+  const loader = $('#loader'), selo = $('#loader .selo');
+  const m = $('#loader .selo-mark').getBoundingClientRect(), s = selo.getBoundingClientRect();
+  selo.style.transformOrigin = `${m.left + m.width * 0.5 - s.left}px ${m.top + m.height * 0.53 - s.top}px`;
+  leaveLoader(true);
+  animate(selo, { scale: [1, 28], duration: 1800, ease: 'inQuart' });
+  animate(loader, {
+    opacity: [1, 0], duration: 900, delay: 950, ease: 'linear',
+    onComplete: () => { seal.stop(); loader.remove(); },
+  });
 }
 
 addEventListener('resize', measure);
@@ -286,5 +300,4 @@ measure();
 requestAnimationFrame(frame);
 stage.load().then(() => { stage.ready = true; measure(); }).catch((err) => {
   console.error(err);
-  counter.textContent = '—';
 });

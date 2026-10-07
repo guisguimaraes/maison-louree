@@ -119,10 +119,12 @@ export class Spray {
   }
 
   // um borrifo: jato de ~0,45 s, como uma apertada no pulverizador
-  fire(origin, dir) {
+  // opções (para outros usos, como os respingos de uma gota): velocidade, abertura do cone, duração, névoa
+  fire(origin, dir, { speed = 1, spread = 9, duration = 0.5, mist = true } = {}) {
     this.origin.copy(origin);
     this.dir.copy(dir).normalize();
-    this.emitting = 0.5;
+    this.emitting = duration;
+    this.opts = { speed, spread, mist };
   }
 
   emitDrop(i) {
@@ -132,8 +134,9 @@ export class Spray {
     const a = new THREE.Vector3().crossVectors(d, up).normalize();
     const b = new THREE.Vector3().crossVectors(d, a).normalize();
     const ang = Math.random() * Math.PI * 2;
-    const spread = Math.tan(9 * Math.PI / 180) * Math.pow(Math.random(), 0.7);
-    const speed = rand(0.7, 1.45);
+    const o = this.opts || { speed: 1, spread: 9 };
+    const spread = Math.tan(o.spread * Math.PI / 180) * Math.pow(Math.random(), 0.7);
+    const speed = rand(0.7, 1.45) * o.speed;
     const v = d.clone().addScaledVector(a, Math.cos(ang) * spread).addScaledVector(b, Math.sin(ang) * spread).normalize().multiplyScalar(speed);
     const k = i * 3;
     this.pos[k] = this.origin.x + rand(-0.0004, 0.0004);
@@ -171,7 +174,7 @@ export class Spray {
         this.emitDrop(this.cursor);
       }
       this.puffNext += 70 * dt;
-      while (this.puffNext >= 1) { this.puffNext -= 1; this.emitPuff(); }
+      while (this.puffNext >= 1) { this.puffNext -= 1; if (this.opts?.mist !== false) this.emitPuff(); }
     }
 
     // gotículas: arrasto forte (freiam em ~15 cm), quase sem gravidade, ar mexendo

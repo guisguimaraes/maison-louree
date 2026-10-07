@@ -11,6 +11,8 @@ import { makeLabel, makeMarble, LeafGobo } from './textures.js';
 import { Tunnel } from './tunnel.js';
 import { GiftBox } from './box.js';
 import { Spray } from './spray.js';
+import { makeRoom, ROOM } from './room.js';
+import { Reflector } from 'three/addons/objects/Reflector.js';
 
 const DEG = Math.PI / 180;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -62,7 +64,7 @@ export class Stage {
     this.introT = 0;
     this.time = 0;
     this.active = true;
-    this.angles = { rose: -0.5, noir: 0.4 };
+    this.angles = { rose: 0, noir: 0 };
     this.flight = { f: 0, f0: 0, t: 0, flying: false, done: false, speed: 0 };
     this.preLight = 0;       // luz que acende nos frascos no fundo do túnel
     this.boxes = {};
@@ -123,31 +125,70 @@ export class Stage {
   initScene() {
     const s = this.scene;
 
-    // parede e chão
-    this.wallMat = new THREE.MeshStandardMaterial({ color: STATES[0].wall, roughness: 0.96 });
-    const wall = new THREE.Mesh(new THREE.PlaneGeometry(8, 4), this.wallMat);
-    wall.position.set(0, 1.2, -0.34);
-    wall.receiveShadow = true;
+    // fundo: sala de luxo desfocada (pintada, sem luz da cena) e chão escuro polido
+    this.wallMat = new THREE.MeshBasicMaterial({ map: makeRoom(), toneMapped: true });
+    const wall = new THREE.Mesh(new THREE.PlaneGeometry(ROOM.w, ROOM.h), this.wallMat);
+    wall.position.set(0, ROOM.floor + ROOM.h / 2, ROOM.z);
     s.add(wall);
-    this.floorMat = new THREE.MeshStandardMaterial({ color: STATES[0].floor, roughness: 0.9 });
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(8, 4), this.floorMat);
+    // parede lateral escura além do quadro (para não ver o vazio nas laterais)
+    const side = new THREE.Mesh(new THREE.PlaneGeometry(12, 6), new THREE.MeshBasicMaterial({ color: '#0b0908' }));
+    side.position.set(0, 2, ROOM.z - 0.01);
+    s.add(side);
+    this.floorMat = new THREE.MeshStandardMaterial({ color: STATES[0].floor, roughness: 0.42, metalness: 0.1 });
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 6), this.floorMat);
     floor.rotation.x = -Math.PI / 2;
-    floor.position.y = -0.14;
+    floor.position.set(0, ROOM.floor, -0.8);
     floor.receiveShadow = true;
     s.add(floor);
 
-    // pedestal de mármore branco
+    // bancada de mármore negro polido
     const marble = makeMarble(this.aniso);
     const geo = new RoundedBoxGeometry(0.42, 0.14, 0.24, 5, 0.006);
     boxUV(geo, 1 / 0.62);
     this.marbleMat = new THREE.MeshPhysicalMaterial({
-      map: marble.map, roughnessMap: marble.rough, roughness: 1, metalness: 0,
-      clearcoat: 0.45, clearcoatRoughness: 0.18, envMapIntensity: 1.6,
+      map: marble.map, roughnessMap: marble.rough, roughness: 0.55, metalness: 0,
+      clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 1.2,
     });
     const ped = new THREE.Mesh(geo, this.marbleMat);
     ped.position.set(0.0, -0.07, 0);
     ped.castShadow = ped.receiveShadow = true;
     s.add(ped);
+
+    // reflexo polido no tampo: espelho suave somado ao mármore (mais forte em ângulo rasante)
+    const reflector = (this.reflector = new Reflector(new THREE.PlaneGeometry(0.406, 0.226), {
+      textureWidth: 1024, textureHeight: 576, clipBias: 0.002,
+      shader: {
+        name: 'MarbleReflection',
+        uniforms: { color: { value: null }, tDiffuse: { value: null }, textureMatrix: { value: null }, uStrength: { value: 0.34 } },
+        vertexShader: /* glsl */`
+          uniform mat4 textureMatrix; varying vec4 vUv; varying vec3 vWorld;
+          void main(){
+            vUv = textureMatrix * vec4(position, 1.0);
+            vec4 w = modelMatrix * vec4(position, 1.0);
+            vWorld = w.xyz;
+            gl_Position = projectionMatrix * viewMatrix * w;
+          }`,
+        fragmentShader: /* glsl */`
+          uniform sampler2D tDiffuse; uniform float uStrength; varying vec4 vUv; varying vec3 vWorld;
+          void main(){
+            vec2 uv = vUv.xy / vUv.w;
+            vec3 c = texture2D(tDiffuse, uv).rgb * 0.4;
+            c += texture2D(tDiffuse, uv + vec2(0.0018, 0.0)).rgb * 0.15;
+            c += texture2D(tDiffuse, uv - vec2(0.0018, 0.0)).rgb * 0.15;
+            c += texture2D(tDiffuse, uv + vec2(0.0, 0.003)).rgb * 0.15;
+            c += texture2D(tDiffuse, uv - vec2(0.0, 0.003)).rgb * 0.15;
+            vec3 v = normalize(cameraPosition - vWorld);
+            float fres = 0.25 + 0.75 * pow(1.0 - clamp(v.y, 0.0, 1.0), 3.0);
+            gl_FragColor = vec4(c * uStrength * fres, 1.0);
+          }`,
+      },
+    }));
+    reflector.material.transparent = true;
+    reflector.material.blending = THREE.AdditiveBlending;
+    reflector.material.depthWrite = false;
+    reflector.rotation.x = -Math.PI / 2;
+    reflector.position.set(0, 0.0003, 0);
+    s.add(reflector);
 
     // luz principal: sol entrando pelas folhas
     this.gobo = new LeafGobo(256);
@@ -382,7 +423,7 @@ export class Stage {
         S.az = lerp(S.az, n === 'rose' ? -8 : 8, f);
         S.el = lerp(S.el, lerp(34, 10, u), f);
         S.dist = lerp(S.dist, lerp(0.27, 0.34, u), f);
-        S.shift = lerp(S.shift, 0.2, f);
+        S.shift = lerp(S.shift, 0.08, f);
       }
     }
 
@@ -421,8 +462,9 @@ export class Stage {
     this.hemi.intensity = 0.07 * lightOpen;
     this.front.intensity = 0.12 * lightOpen;
     this.scene.environmentIntensity = 0.03 + 0.09 * lightOpen;
-    this.wallMat.color.copy(S.wall);
-    this.floorMat.color.copy(S.floor);
+    // a sala acompanha o tom de cada momento (vinho no Rose, mais neutro no Noir)
+    this.wallMat.color.copy(S.wall).multiplyScalar(3.2).lerp(new THREE.Color(1, 1, 1), 0.45).multiplyScalar(0.15 + 0.85 * lightOpen);
+    this.floorMat.color.copy(S.floor).multiplyScalar(0.8);
     this.renderer.toneMappingExposure = this.reduce ? 1.05 : Math.max(lerp(0.25, 0.8, pre), lerp(0.25, 1.05, outQuart(clamp(iT / 3))));
     this.beam.material.uniforms.uOpacity.value = 0.05 * lightOpen * breathe * (1 - inDetails * 0.4);
     this.beam.material.uniforms.uTime.value = T;
@@ -440,13 +482,9 @@ export class Stage {
     for (const n of ['rose', 'noir']) {
       const b = this.bottles[n];
       if (!b) continue;
-      const speed = (n === 'rose' ? 0.11 : 0.09) * spinK * (1 - clamp((t - 2) * 4));
-      let a = this.angles[n] + speed * dt * (1 - fronts[n]);
-      // na coleção, o frasco da vez vira de frente e balança devagar
-      if (fronts[n] > 0.01) {
-        const goal = Math.round(a / (Math.PI * 2)) * Math.PI * 2 + Math.sin(T * 0.45) * 0.42;
-        a += (goal - a) * (1 - Math.pow(0.25, dt)) * fronts[n];
-      }
+      // sempre de frente para a pessoa: só um balanço lento (um pouco maior na coleção)
+      const amp = lerp(0.12, 0.36, fronts[n]) * spinK * (1 - clamp((t - 2) * 4));
+      const a = Math.sin(T * 0.3 + (n === 'rose' ? 0 : 1.9)) * amp;
       this.angles[n] = a;
       b.pivot.rotation.y = a + this.drag;
       const other = n === 'rose' ? fronts.noir : fronts.rose;
@@ -482,7 +520,7 @@ export class Stage {
     const offX = side * (0.42 * (1 - inOutCubic(boxIn)) + 0.32 * away);
     box.group.visible = boxIn > 0.001 && away < 0.999;
     box.group.position.set(SLOTS[n].x + offX, 0, SLOTS[n].z);
-    if (lift <= 0) return;
+    if (lift <= 0) { b.pivot.rotation.x = 0; return; }
 
     const size = b.size, h = b.height;
     const base = box.group.position;
@@ -614,6 +652,8 @@ export class Stage {
     this.slow = (this.slow || 0) + 1;
     if (this.slow < 2) return; // só reduz se ficar lento duas medições seguidas
     this.slow = 0;
+    // primeiro abre mão do reflexo do tampo (renderiza a cena duas vezes)
+    if (this.reflector.visible) { this.reflector.visible = false; return; }
     const pr = this.renderer.getPixelRatio();
     if (pr > 1) {
       this.renderer.setPixelRatio(Math.max(1, pr - 0.25));
