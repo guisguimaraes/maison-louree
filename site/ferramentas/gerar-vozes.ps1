@@ -1,4 +1,4 @@
-﻿# Gera as vozes "Sinta a fragrância." na ElevenLabs (Carla no Rose Dorée, Fabio no Lourée Noir).
+﻿# Gera as vozes "Sinta a fragrância deste perfume." na ElevenLabs (Carla no Rose Dorée, Fabio no Lourée Noir).
 # A chave é pedida na hora e não fica salva em lugar nenhum.
 # Uso (na pasta do projeto):
 #   powershell -ExecutionPolicy Bypass -File .\site\ferramentas\gerar-vozes.ps1
@@ -16,8 +16,10 @@ $vozes = [ordered]@{
 }
 
 $corpo = @{
-  text           = 'Sinta a fragrância.'
-  model_id       = 'eleven_multilingual_v2'
+  text           = 'Sinta a fragrância deste perfume.'
+  # Turbo v2.5 aceita fixar o idioma: evita pronunciar "fragrância" como espanhol/inglês
+  model_id       = 'eleven_turbo_v2_5'
+  language_code  = 'pt'
   voice_settings = @{ stability = 0.5; similarity_boost = 0.8; style = 0.25; speed = 0.9 }
 } | ConvertTo-Json -Depth 3
 $bytes = [System.Text.Encoding]::UTF8.GetBytes($corpo)
