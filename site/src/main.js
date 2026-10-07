@@ -1,7 +1,6 @@
 import Lenis from 'lenis';
 import { animate, stagger } from 'animejs';
 import { Stage } from './scene.js';
-import { laurelSVG } from './laurel.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -14,10 +13,6 @@ const params = new URLSearchParams(location.hash.slice(1));
 const forcedT = params.has('t') ? Number(params.get('t')) : null;
 const skipIntro = reduce || params.has('skip') || forcedT !== null;
 
-/* ---------- coroa do carregamento (folhas acendem com o progresso) ---------- */
-const loaderSvg = $('#loader .laurel');
-loaderSvg.innerHTML = laurelSVG();
-const leafEls = $$('path', loaderSvg);
 
 /* ---------- textos: palavras ---------- */
 function splitWords(el, cls) {
@@ -78,21 +73,20 @@ $('#year').textContent = new Date().getFullYear();
 let realProgress = 0;
 const stage = new Stage($('#stage'), { onProgress: (p) => { realProgress = p; } });
 if (import.meta.env.DEV) window.__stage = stage;
+// modo de teste: #f=0.4 congela a câmera naquele ponto do túnel
+if (params.has('f')) Object.assign(stage.flight, { f: Number(params.get('f')), frozen: true });
 
 /* ---------- carregamento ---------- */
-const counter = $('#loaderCount'), bar = $('#loaderBar');
+const counter = $('#loaderCount');
 let shown = 0;
 const loadStart = performance.now();
 function tickLoader() {
-  const minTime = skipIntro ? 0 : 1900;
+  const minTime = skipIntro ? 0 : 2600;
   const timeCap = minTime ? clamp((performance.now() - loadStart) / minTime) : 1;
   const target = Math.min(realProgress, timeCap);
   shown += (target - shown) * 0.12;
   if (target === 1 && shown > 0.995) shown = 1;
   counter.textContent = String(Math.round(shown * 100)).padStart(3, '0');
-  bar.style.transform = `scaleX(${shown})`;
-  const lit = Math.floor(shown * leafEls.length);
-  leafEls.forEach((p, i) => { p.style.opacity = i < lit ? 1 : 0; p.style.transition = 'opacity .5s'; });
   return shown;
 }
 
@@ -253,7 +247,12 @@ function frame(now) {
     const v = tickLoader();
     if (v === 1 && stage.ready) {
       phase = 'intro';
-      leaveLoader();
+      if (skipIntro) leaveLoader();
+      else {
+        // atravessa o túnel; a entrada da cena começa quando a câmera chega na tampa
+        animate('#loader .loader-foot', { opacity: [1, 0], duration: 900, ease: 'inOutCubic' });
+        stage.startFlight(leaveLoader);
+      }
     }
   }
 
@@ -288,16 +287,11 @@ function leaveLoader() {
     stage.playing = true;
     document.body.classList.remove('is-loading');
     lenis.start();
-    if (skipIntro) { stage.introT = 99; instantHero(); loader.remove(); return; }
+    loader.remove();
+    if (skipIntro) { stage.skipTunnel(); stage.introT = 99; instantHero(); return; }
     setTimeout(revealHero, 3600);
   };
-  if (skipIntro) { go(); return; }
-  animate('#loader .loader-mark, #loader .loader-foot, #loader .loader-bar', { opacity: [1, 0], translateY: [0, -14], duration: 700, delay: stagger(60), ease: 'inOutCubic' });
-  animate(loader, {
-    clipPath: ['inset(0% 0 0% 0)', 'inset(0% 0 100% 0)'], duration: 1300, delay: 450, ease: 'inOutCubic',
-    onComplete: () => loader.remove(),
-  });
-  setTimeout(go, 450);
+  go();
 }
 
 addEventListener('resize', measure);

@@ -8,6 +8,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { makeLabel, makeMarble, LeafGobo } from './textures.js';
+import { Tunnel } from './tunnel.js';
 
 const DEG = Math.PI / 180;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -24,6 +25,10 @@ const SPOTS = {
 
 /* Estados da câmera e da luz ao longo da página.
    0 = abertura · 1 = Rose Dorée · 2 = Lourée Noir · 3 = os frascos */
+/* Túnel da entrada: termina no par de frascos e a câmera o atravessa
+   até ficar colada na tampa do Lourée Noir (início da entrada da cena). */
+const TUNNEL = { center: new THREE.Vector3(0.003, 0.05, 0), az: 16, el: 5, far: 6.2, dur: 5.2 };
+
 const STATES = [
   { tgt: [0.0, 0.042, 0], az: 9, el: 10, dist: 0.6, shift: 0.25, key: '#ffd29a', keyI: 5.2, rim: '#ffb35c', rimI: 2.2, wall: '#3b2c1f', floor: '#21180f' },
   { tgt: [SPOTS.rose.x, 0.036, SPOTS.rose.z], az: -16, el: 6, dist: 0.37, shift: 0.24, key: '#ffcfb0', keyI: 5.0, rim: '#ff9f8a', rimI: 2.4, wall: '#3e2125', floor: '#221012' },
@@ -50,6 +55,8 @@ export class Stage {
     this.time = 0;
     this.active = true;
     this.angles = { rose: -0.5, noir: 0.4 };
+    this.flight = { f: 0, f0: 0, t: 0, flying: false, done: false, speed: 0 };
+    this.preLight = 0;       // luz que acende nos frascos no fundo do túnel
 
     this.initRenderer();
     this.initScene();
@@ -162,6 +169,22 @@ export class Stage {
     s.add(this.beam);
 
     this.bottles = {};
+
+    this.tunnel = new Tunnel(TUNNEL.center, TUNNEL.az, TUNNEL.el);
+    s.add(this.tunnel.points);
+  }
+
+  // atravessa o túnel até a tampa do Lourée Noir
+  startFlight(onArrive) {
+    const F = this.flight;
+    if (F.frozen) return;
+    F.flying = true; F.t = 0; F.f0 = F.f;
+    this.onArrive = onArrive;
+  }
+
+  skipTunnel() {
+    this.flight.done = true;
+    this.tunnel.points.visible = false;
   }
 
   async load() {
@@ -223,10 +246,10 @@ export class Stage {
         m.envMap = this.studio;
         m.envMapIntensity = 0.7;
       } else if (m.name === 'Metal dourado') {
-        m.roughness = 0.12;
+        m.roughness = 0.3; // dourado escovado: brilho mais contido
         m.envMap = this.studio;
-        m.envMapIntensity = 1.35;
-        m.color = new THREE.Color(0.86, 0.62, 0.26);
+        m.envMapIntensity = 0.75;
+        m.color = new THREE.Color(0.7, 0.5, 0.22);
       } else if (m.name.startsWith('Rotulo')) {
         o.position.z += 0.0006;
         m.map = label.map;
@@ -271,6 +294,7 @@ export class Stage {
     this.bloom.resolution.set(w / 3, h / 3);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
+    this.tunnel.resize(h, this.camera.fov, w / h, this.renderer.getPixelRatio());
   }
 
   /* estado interpolado para a posição t (0..3) */
@@ -302,7 +326,9 @@ export class Stage {
       this.intro = clamp(this.introT / 5.4);
     }
     const iT = this.introT;
-    const lightOpen = this.reduce ? 1 : outCubic(clamp((iT - 0.3) / 2.6));
+    if (this.bottles.noir) this.preLight = Math.min(1, this.preLight + dt / 2.8);
+    const pre = outCubic(this.preLight);
+    const lightOpen = this.reduce ? 1 : Math.max(pre * 0.45, outCubic(clamp((iT - 0.3) / 2.6)));
     const camK = this.reduce ? 1 : inOutCubic(clamp((iT - 0.5) / 4.4));
     const spinK = this.reduce ? 0 : clamp((iT - 1.2) / 3);
 
@@ -347,7 +373,8 @@ export class Stage {
       tgt.y + Math.sin(el * DEG) * dist,
       tgt.z + Math.cos(az * DEG) * Math.cos(el * DEG) * dist,
     );
-    this.camera.lookAt(tgt);
+    if (!this.flight.done) this.flyTunnel(dt, T);
+    else this.camera.lookAt(tgt);
     const sx = lerp(0, shiftX, camK), sy = lerp(0, shiftY, camK);
     this.camera.setViewOffset(this.w, this.h, -sx * this.w, -sy * this.h, this.w, this.h);
 
@@ -356,13 +383,13 @@ export class Stage {
     this.key.color.copy(S.key);
     this.key.intensity = S.keyI * lightOpen * breathe;
     this.rim.color.copy(S.rim);
-    this.rim.intensity = S.rimI * (this.reduce ? 1 : clamp((iT - 1.4) / 2.2) ** 1.5);
+    this.rim.intensity = S.rimI * (this.reduce ? 1 : Math.max(pre * 0.9, clamp((iT - 1.4) / 2.2) ** 1.5));
     this.hemi.intensity = 0.07 * lightOpen;
     this.front.intensity = 0.12 * lightOpen;
     this.scene.environmentIntensity = 0.03 + 0.09 * lightOpen;
     this.wallMat.color.copy(S.wall);
     this.floorMat.color.copy(S.floor);
-    this.renderer.toneMappingExposure = this.reduce ? 1.05 : lerp(0.25, 1.05, outQuart(clamp(iT / 3)));
+    this.renderer.toneMappingExposure = this.reduce ? 1.05 : Math.max(lerp(0.25, 0.8, pre), lerp(0.25, 1.05, outQuart(clamp(iT / 3))));
     this.beam.material.uniforms.uOpacity.value = 0.05 * lightOpen * breathe * (1 - inDetails * 0.4);
     this.beam.material.uniforms.uTime.value = T;
     this.beam.material.uniforms.uColor.value.copy(S.key);
@@ -379,7 +406,7 @@ export class Stage {
     for (const n of ['rose', 'noir']) {
       const b = this.bottles[n];
       if (!b) continue;
-      const speed = (n === 'rose' ? 0.32 : 0.27) * spinK;
+      const speed = (n === 'rose' ? 0.11 : 0.09) * spinK;
       let a = this.angles[n] + speed * dt * (1 - fronts[n]);
       // na coleção, o frasco da vez vira de frente e balança devagar
       if (fronts[n] > 0.01) {
@@ -401,6 +428,48 @@ export class Stage {
     }
 
     this.finish.uniforms.uTime.value = (T * 60) % 1000;
+  }
+
+  // câmera dentro do túnel: anda em escala logarítmica (a velocidade parece constante)
+  // e no fim desvia até a tampa do Lourée Noir, onde a entrada da cena começa
+  flyTunnel(dt, T) {
+    const F = this.flight;
+    const prev = F.f;
+    if (F.flying) {
+      F.t += dt;
+      const k = clamp(F.t / TUNNEL.dur);
+      F.f = F.f0 + (1 - F.f0) * inOutCubic(k);
+      if (k >= 1) {
+        F.done = true;
+        this.tunnel.points.visible = false;
+        this.onArrive?.();
+      }
+    } else if (!F.frozen) {
+      F.f = Math.min(0.06, F.f + dt * 0.012); // deriva lenta enquanto carrega
+    }
+    const f = F.f;
+    F.speed = lerp(F.speed, dt > 0 ? (f - prev) / dt : 0, 1 - Math.pow(0.01, dt));
+
+    const cap = SPOTS.noir.clone().add(new THREE.Vector3(0, 0.088, 0));
+    const m = inOutCubic(clamp((f - 0.55) / 0.45));
+    const dist = Math.exp(lerp(Math.log(TUNNEL.far), Math.log(0.11), f));
+    const tgt = TUNNEL.center.clone().lerp(cap, m);
+    const az = lerp(TUNNEL.az, 38, m) + this.pointerSmooth.x * 3.2;
+    const el = lerp(TUNNEL.el, 3, m) + this.pointerSmooth.y * 1.6;
+    this.camera.position.set(
+      tgt.x + Math.sin(az * DEG) * Math.cos(el * DEG) * dist,
+      tgt.y + Math.sin(el * DEG) * dist,
+      tgt.z + Math.cos(az * DEG) * Math.cos(el * DEG) * dist,
+    );
+    this.camera.lookAt(tgt);
+    // leve rolagem da câmera: sensação de ser puxado para dentro
+    this.camera.rotateZ(Math.sin(T * 0.3) * 0.02 * (1 - m));
+
+    const U = this.tunnel.uniforms;
+    U.uTime.value = T;
+    U.uSpin.value += dt * (0.08 + F.speed * 0.9);
+    U.uStretch.value = 1 + Math.min(3.2, F.speed * 9);
+    U.uFade.value = clamp(T / 1.6) * (1 - smoothstep(0.78, 0.97, f));
   }
 
   // posição na tela (px) de um ponto acima do frasco
@@ -448,6 +517,11 @@ export class Stage {
 }
 
 /* ---------- auxiliares ---------- */
+
+function smoothstep(a, b, v) {
+  const k = clamp((v - a) / (b - a));
+  return k * k * (3 - 2 * k);
+}
 
 function bump(t, c, w) {
   const d = Math.abs(t - c) / w;
