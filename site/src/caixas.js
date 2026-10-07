@@ -13,16 +13,39 @@ const INFO = {
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
-function fade(audio, to, ms = 900) {
-  cancelAnimationFrame(audio._fade);
-  const from = audio.volume, t0 = performance.now();
-  const step = (now) => {
-    const k = clamp((now - t0) / ms, 0, 1);
-    audio.volume = from + (to - from) * k;
-    if (k < 1) audio._fade = requestAnimationFrame(step);
-    else if (to === 0) audio.pause();
+/* música em laço sem emenda: o <audio> comum deixa um respiro a cada volta,
+   então a faixa toca pelo Web Audio, com o volume controlado por rampas */
+function createMusic(url) {
+  let ctx = null, gain = null, playing = false, loading = null;
+  async function start() {
+    if (!ctx) {
+      ctx = new AudioContext();
+      gain = ctx.createGain();
+      gain.gain.value = 0;
+      gain.connect(ctx.destination);
+    }
+    if (ctx.state === 'suspended') await ctx.resume();
+    loading = loading || fetch(url).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b));
+    const buffer = await loading;
+    if (!playing) {
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+      src.loop = true;
+      src.connect(gain);
+      src.start();
+      playing = true;
+    }
+  }
+  return {
+    async fadeTo(v, ms) {
+      if (v > 0) await start().catch(() => {});
+      if (!ctx) return;
+      const t = ctx.currentTime;
+      gain.gain.cancelScheduledValues(t);
+      gain.gain.setValueAtTime(gain.gain.value, t);
+      gain.gain.linearRampToValueAtTime(v, t + ms / 1000);
+    },
   };
-  audio._fade = requestAnimationFrame(step);
 }
 
 export function initCaixas({ stage, cart }) {
@@ -31,10 +54,7 @@ export function initCaixas({ stage, cart }) {
 
   /* ---------- música e vozes ---------- */
   const VOL = 0.3;
-  const music = new Audio(`${BASE}media/musica.mp3`);
-  music.loop = true;
-  music.preload = 'none';
-  music.volume = 0;
+  const music = createMusic(`${BASE}media/musica.mp3`);
   const vozes = {
     rose: new Audio(`${BASE}media/voz-rose.mp3`),
     noir: new Audio(`${BASE}media/voz-noir.mp3`),
@@ -48,8 +68,7 @@ export function initCaixas({ stage, cart }) {
     somBtn.classList.toggle('on', on);
     somBtn.setAttribute('aria-pressed', String(on));
     somBtn.setAttribute('aria-label', on ? 'Desligar música' : 'Ligar música');
-    if (on) { music.play().catch(() => {}); fade(music, VOL, 1800); }
-    else fade(music, 0, 700);
+    music.fadeTo(on ? VOL : 0, on ? 1800 : 700);
   }
   somBtn.addEventListener('click', () => { somMexido = true; setSom(!somOn); });
   // a música só pode começar depois de um toque (regra dos navegadores)
@@ -78,8 +97,8 @@ export function initCaixas({ stage, cart }) {
       voz.currentTime = 0;
       voz.play().catch(() => {});
       if (somOn) {
-        fade(music, VOL * 0.35, 400);
-        voz.onended = () => { if (somOn) fade(music, VOL, 1600); };
+        music.fadeTo(VOL * 0.35, 400);
+        voz.onended = () => { if (somOn) music.fadeTo(VOL, 1600); };
       }
     }, 450);
   };
