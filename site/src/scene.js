@@ -128,7 +128,7 @@ export class Stage {
     // fundo: sala de luxo desfocada (pintada, sem luz da cena) e chão escuro polido
     this.wallMat = new THREE.MeshBasicMaterial({ map: makeRoom(), toneMapped: true });
     const wall = new THREE.Mesh(new THREE.PlaneGeometry(ROOM.w, ROOM.h), this.wallMat);
-    wall.position.set(0, ROOM.floor + ROOM.h / 2, ROOM.z);
+    wall.position.set(0, ROOM.cy, ROOM.z);
     s.add(wall);
     // parede lateral escura além do quadro (para não ver o vazio nas laterais)
     const side = new THREE.Mesh(new THREE.PlaneGeometry(12, 6), new THREE.MeshBasicMaterial({ color: '#0b0908' }));
@@ -137,7 +137,7 @@ export class Stage {
     this.floorMat = new THREE.MeshStandardMaterial({ color: STATES[0].floor, roughness: 0.42, metalness: 0.1 });
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 6), this.floorMat);
     floor.rotation.x = -Math.PI / 2;
-    floor.position.set(0, ROOM.floor, -0.8);
+    floor.position.set(0, -0.14, -0.8);
     floor.receiveShadow = true;
     s.add(floor);
 
@@ -463,7 +463,7 @@ export class Stage {
     this.front.intensity = 0.12 * lightOpen;
     this.scene.environmentIntensity = 0.03 + 0.09 * lightOpen;
     // a sala acompanha o tom de cada momento (vinho no Rose, mais neutro no Noir)
-    this.wallMat.color.copy(S.wall).multiplyScalar(3.2).lerp(new THREE.Color(1, 1, 1), 0.45).multiplyScalar(0.15 + 0.85 * lightOpen);
+    this.wallMat.color.copy(S.wall).multiplyScalar(3.2).lerp(new THREE.Color(1, 1, 1), 0.55).multiplyScalar((0.15 + 0.85 * lightOpen) * 1.25);
     this.floorMat.color.copy(S.floor).multiplyScalar(0.8);
     this.renderer.toneMappingExposure = this.reduce ? 1.05 : Math.max(lerp(0.25, 0.8, pre), lerp(0.25, 1.05, outQuart(clamp(iT / 3))));
     this.beam.material.uniforms.uOpacity.value = 0.05 * lightOpen * breathe * (1 - inDetails * 0.4);
