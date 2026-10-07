@@ -209,7 +209,7 @@ const parallax = $$('[data-parallax]');
 function revealHero() {
   const header = $('#header');
   header.style.setProperty('--hl', 1);
-  animate('#header .brand, #header nav a, #menuToggle', { opacity: [0, 1], translateY: [-10, 0], duration: 1200, delay: stagger(90), ease: 'outQuart' });
+  animate('#header .brand, #header nav a, #sacolaBtn, #menuToggle', { opacity: [0, 1], translateY: [-10, 0], duration: 1200, delay: stagger(90), ease: 'outQuart' });
   fly($('.hero h1'), { delay: 150, duration: 2200 });
   animate('.hero .eyebrow', { opacity: [0, 1], translateY: [12, 0], duration: 1000, ease: 'outQuart' });
   animate('.hero-description, .hero .line-link', { opacity: [0, 1], translateY: [16, 0], duration: 1200, delay: stagger(140, { start: 750 }), ease: 'outQuart' });
