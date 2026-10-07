@@ -172,7 +172,8 @@ function updateTags(t) {
 }
 
 /* ---------- as caixas: foco, borrifo, voz e música ---------- */
-const caixas = initCaixas({ reduce });
+const caixas = initCaixas({ stage });
+if (import.meta.env.DEV) window.__caixas = caixas;
 addEventListener('pointermove', (e) => {
   stage.setPointer((e.clientX / innerWidth) * 2 - 1, -((e.clientY / innerHeight) * 2 - 1));
 }, { passive: true });
@@ -253,7 +254,7 @@ function frame(now) {
 
   // não desenha o 3D quando uma seção sólida cobre a tela inteira
   const covers = (sel) => { const r = $(sel).getBoundingClientRect(); return r.top <= 0 && r.bottom >= S.vh; };
-  stage.active = !(covers('#manifesto') || covers('#maison') || covers('#detalhes') || covers('footer'));
+  stage.active = !(covers('#manifesto') || covers('#maison') || covers('footer'));
 
   stage.update(dt);
   stage.render();

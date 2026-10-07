@@ -9,6 +9,8 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { makeLabel, makeMarble, LeafGobo } from './textures.js';
 import { Tunnel } from './tunnel.js';
+import { GiftBox } from './box.js';
+import { Spray } from './spray.js';
 
 const DEG = Math.PI / 180;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -23,6 +25,12 @@ const SPOTS = {
   noir: new THREE.Vector3(0.062, 0, -0.028),
 };
 
+/* Onde ficam as caixas sobre o mármore na seção "as caixas" (centro do fundo) */
+const SLOTS = {
+  rose: new THREE.Vector3(-0.07, 0, 0.012),
+  noir: new THREE.Vector3(0.07, 0, 0.012),
+};
+
 /* Estados da câmera e da luz ao longo da página.
    0 = abertura · 1 = Rose Dorée · 2 = Lourée Noir · 3 = os frascos */
 /* Túnel da entrada: termina no par de frascos e a câmera o atravessa
@@ -33,7 +41,7 @@ const STATES = [
   { tgt: [0.0, 0.042, 0], az: 9, el: 10, dist: 0.6, shift: 0.25, key: '#ffd29a', keyI: 5.2, rim: '#ffb35c', rimI: 2.2, wall: '#3b2c1f', floor: '#21180f' },
   { tgt: [SPOTS.rose.x, 0.036, SPOTS.rose.z], az: -16, el: 6, dist: 0.37, shift: 0.24, key: '#ffcfb0', keyI: 5.0, rim: '#ff9f8a', rimI: 2.4, wall: '#3e2125', floor: '#221012' },
   { tgt: [SPOTS.noir.x, 0.04, SPOTS.noir.z], az: 22, el: 7, dist: 0.4, shift: 0.24, key: '#ffcf8a', keyI: 4.6, rim: '#ffb050', rimI: 2.8, wall: '#1f1b1c', floor: '#141011' },
-  { tgt: [0.0, 0.05, 0], az: -4, el: 9, dist: 0.62, shift: 0.14, key: '#ffd8a8', keyI: 5.2, rim: '#ffb35c', rimI: 2.3, wall: '#33271c', floor: '#1d150e' },
+  { tgt: [0.0, 0.012, 0.0], az: -3, el: 38, dist: 0.5, shift: 0.14, key: '#ffd8a8', keyI: 5.2, rim: '#ffb35c', rimI: 2.3, wall: '#33271c', floor: '#1d150e' },
 ];
 
 export class Stage {
@@ -57,6 +65,10 @@ export class Stage {
     this.angles = { rose: -0.5, noir: 0.4 };
     this.flight = { f: 0, f0: 0, t: 0, flying: false, done: false, speed: 0 };
     this.preLight = 0;       // luz que acende nos frascos no fundo do túnel
+    this.boxes = {};
+    this.up = { rose: 0, noir: 0 }; // 0 = deitado na caixa, 1 = de pé para borrifar
+    this.upWant = null;
+    this.sprayReq = null;
 
     this.initRenderer();
     this.initScene();
@@ -172,6 +184,7 @@ export class Stage {
 
     this.tunnel = new Tunnel(TUNNEL.center, TUNNEL.az, TUNNEL.el);
     s.add(this.tunnel.points);
+    this.spray = new Spray(s);
   }
 
   // atravessa o túnel até a tampa do Lourée Noir
@@ -204,6 +217,13 @@ export class Stage {
     ]);
     this.addBottle('rose', rose.scene);
     this.addBottle('noir', noir.scene);
+    for (const n of ['rose', 'noir']) {
+      const box = new GiftBox(n, this.bottles[n].size, this.aniso, this.studio);
+      box.group.position.copy(SLOTS[n]);
+      box.group.visible = false;
+      this.scene.add(box.group);
+      this.boxes[n] = box;
+    }
     this.resize();
     // primeira compilação antes de mostrar
     this.renderer.compile(this.scene, this.camera);
@@ -214,6 +234,10 @@ export class Stage {
     const pivot = new THREE.Group();
     pivot.position.copy(SPOTS[name]);
     model.position.y = -box.min.y + 0.0004;
+    // eixo do frasco no centro (para girar e deitar sem deslocar)
+    const ctr = box.getCenter(new THREE.Vector3());
+    model.position.x = -ctr.x;
+    model.position.z = -ctr.z;
     pivot.add(model);
     this.scene.add(pivot);
 
@@ -282,7 +306,7 @@ export class Stage {
     glow.position.copy(SPOTS[name]).add(new THREE.Vector3(0.062, 0.0008, -0.05));
     this.scene.add(glow);
 
-    this.bottles[name] = { pivot, model, glow, height: box.max.y - box.min.y };
+    this.bottles[name] = { pivot, model, glow, height: box.max.y - box.min.y, size: box.getSize(new THREE.Vector3()) };
   }
 
   resize() {
@@ -295,6 +319,7 @@ export class Stage {
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.tunnel.resize(h, this.camera.fov, w / h, this.renderer.getPixelRatio());
+    this.spray.resize(h * this.renderer.getPixelRatio(), this.camera.fov);
   }
 
   /* estado interpolado para a posição t (0..3) */
@@ -342,13 +367,22 @@ export class Stage {
       const want = this.focus === n ? 1 : 0;
       this.focusMix[n] = lerp(this.focusMix[n], want, 1 - Math.pow(0.02, dt));
     }
+    // frasco que sai da caixa para borrifar
+    for (const n of ['rose', 'noir']) {
+      const want = this.upWant === n && this.focus === n ? 1 : 0;
+      this.up[n] = clamp(this.up[n] + (want ? dt : -dt) / 1.5);
+    }
     for (const n of ['rose', 'noir']) {
       const f = this.focusMix[n] * inDetails;
       if (f > 0.001) {
-        const F = STATES[n === 'rose' ? 1 : 2];
-        S.tgt.lerp(new THREE.Vector3(...F.tgt), f);
-        S.az = lerp(S.az, F.az * 0.6, f);
-        S.dist = lerp(S.dist, F.dist * 1.1, f);
+        const box = this.boxes[n];
+        const u = inOutCubic(this.up[n]);
+        const ft = SLOTS[n].clone().add(new THREE.Vector3(0, lerp(0.012, (box ? box.D : 0.03) + 0.06, u), lerp(0.035, 0.0, u)));
+        S.tgt.lerp(ft, f);
+        S.az = lerp(S.az, n === 'rose' ? -8 : 8, f);
+        S.el = lerp(S.el, lerp(34, 10, u), f);
+        S.dist = lerp(S.dist, lerp(0.27, 0.34, u), f);
+        S.shift = lerp(S.shift, 0.2, f);
       }
     }
 
@@ -406,7 +440,7 @@ export class Stage {
     for (const n of ['rose', 'noir']) {
       const b = this.bottles[n];
       if (!b) continue;
-      const speed = (n === 'rose' ? 0.11 : 0.09) * spinK;
+      const speed = (n === 'rose' ? 0.11 : 0.09) * spinK * (1 - clamp((t - 2) * 4));
       let a = this.angles[n] + speed * dt * (1 - fronts[n]);
       // na coleção, o frasco da vez vira de frente e balança devagar
       if (fronts[n] > 0.01) {
@@ -425,9 +459,86 @@ export class Stage {
       const settle = 1 - outCubic(clamp((iT - 0.2) / 3.2));
       b.pivot.position.y = SPOTS[n].y + (this.reduce ? 0 : settle * 0.012 * (n === 'rose' ? 1 : 0.6));
       b.glow.material.opacity = 0.55 * lightOpen * (1 - settle);
+      this.placeInBox(n, b, t, T);
     }
+    this.updateSpray(dt, T);
 
     this.finish.uniforms.uTime.value = (T * 60) % 1000;
+  }
+
+  /* Seção "as caixas": as caixas entram pelas laterais, os frascos sobem,
+     deitam e descem para dentro delas. No foco, o outro sai de cena e o
+     escolhido se levanta da caixa para borrifar. */
+  placeInBox(n, b, t, T) {
+    const box = this.boxes[n];
+    if (!box) return;
+    const d2 = clamp(t - 2);
+    const lift = smoothstep(0.02, 0.35, d2);
+    const boxIn = smoothstep(0.15, 0.6, d2);
+    const put = smoothstep(0.5, 0.95, d2);
+    const side = n === 'rose' ? -1 : 1;
+    const other = n === 'rose' ? 'noir' : 'rose';
+    const away = inOutCubic(clamp(this.focusMix[other] * 1.15)) * clamp(d2 * 2);
+    const offX = side * (0.42 * (1 - inOutCubic(boxIn)) + 0.32 * away);
+    box.group.visible = boxIn > 0.001 && away < 0.999;
+    box.group.position.set(SLOTS[n].x + offX, 0, SLOTS[n].z);
+    if (lift <= 0) return;
+
+    const size = b.size, h = b.height;
+    const base = box.group.position;
+    const rest = box.restPoint(size).add(base);
+    const hover = new THREE.Vector3(base.x, box.D + 0.035 + Math.sin(T * 0.8) * 0.002 * (1 - put), base.z);
+    const u = inOutCubic(this.up[n]);
+    const stand = new THREE.Vector3(base.x, box.D + 0.01 + Math.sin(T * 0.9) * 0.0015, base.z + 0.01);
+
+    const p = b.pivot.position.clone().lerp(hover, lift).lerp(rest, put).lerp(stand, u);
+    b.pivot.position.copy(p);
+    // de frente para a câmera, deita (rótulo para cima) e, ao borrifar, se levanta
+    const cur = b.pivot.rotation.y;
+    const front = Math.round(cur / (Math.PI * 2)) * Math.PI * 2;
+    b.pivot.rotation.y = lerp(lerp(cur, front, lift), front + (n === 'rose' ? -0.62 : -0.62), u);
+    b.pivot.rotation.x = lerp(-Math.PI / 2 * put, 0, u);
+    b.glow.material.opacity *= 1 - lift;
+  }
+
+  // pede o borrifo: o frasco se levanta e, de pé, borrifa
+  sprayBottle(n) {
+    this.upWant = n;
+    this.sprayReq = n;
+  }
+
+  resetSpray() {
+    this.upWant = null;
+    this.sprayReq = null;
+  }
+
+  updateSpray(dt, T) {
+    const n = this.sprayReq;
+    if (n && this.up[n] >= 1 && this.bottles[n]) {
+      const b = this.bottles[n];
+      b.pivot.updateMatrixWorld();
+      // orifício do pulverizador: topo da tampa, voltado para a frente do frasco
+      const origin = b.pivot.localToWorld(new THREE.Vector3(0, b.height - 0.006, 0.007));
+      const dir = new THREE.Vector3(0, 0.06, 1).applyQuaternion(b.pivot.getWorldQuaternion(new THREE.Quaternion()));
+      this.spray.uniforms.uLight.value.copy(this.key.position).normalize();
+      this.spray.fire(origin, dir);
+      this.sprayReq = null;
+      this.onSpray?.(n);
+    }
+    this.spray.update(dt, T);
+  }
+
+  // qual perfume está sob o ponteiro (coordenadas normalizadas -1..1)
+  pick(x, y) {
+    if (!this.ray) this.ray = new THREE.Raycaster();
+    this.ray.setFromCamera(new THREE.Vector2(x, y), this.camera);
+    let best = null, bestD = Infinity;
+    for (const n of ['rose', 'noir']) {
+      const objs = [this.boxes[n]?.group, this.bottles[n]?.pivot].filter((o) => o && o.visible);
+      const hit = this.ray.intersectObjects(objs, true)[0];
+      if (hit && hit.distance < bestD) { bestD = hit.distance; best = n; }
+    }
+    return best;
   }
 
   // câmera dentro do túnel: anda em escala logarítmica (a velocidade parece constante)
