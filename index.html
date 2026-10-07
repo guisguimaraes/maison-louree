@@ -10,16 +10,17 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Italiana&family=Manrope:wght@300;400;500&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-CYfeo5Vy.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CtjMAXth.css">
+  <script type="module" crossorigin src="./assets/index-B7Jz-uSM.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-OaS1IypL.css">
 </head>
 <body class="is-loading">
 
   <!-- Carregamento -->
   <div id="loader" aria-hidden="true">
-    <div class="loader-foot">
-      <span>Maison Lourée</span>
-      <span id="loaderCount">000</span>
+    <div class="selo">
+      <div class="selo-mark"></div>
+      <p class="selo-word" data-fly>Maison Lourée</p>
+      <p class="selo-sub">Parfums</p>
     </div>
   </div>
 
@@ -34,6 +35,7 @@
       <a class="fx-fade" href="#maison">A maison</a>
       <a class="fx-fade" href="#detalhes">Os frascos</a>
     </nav>
+    <button class="sacola-btn fx-fade" id="sacolaBtn" aria-label="Abrir sacola"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M5 8h14l-1.2 12.2a1 1 0 0 1-1 .8H7.2a1 1 0 0 1-1-.8L5 8Z"/><path d="M9 10V6.5a3 3 0 0 1 6 0V10"/></svg><span class="sacola-n" id="sacolaN" hidden>0</span></button>
     <button id="menuToggle" class="fx-fade" aria-expanded="false" aria-controls="menu" aria-label="Abrir menu"><span></span><span></span></button>
   </header>
 
@@ -86,7 +88,7 @@
           <span class="eyebrow">Rose Dorée · Feminino</span>
           <h2 data-fly>O lado<br><em>luminoso.</em></h2>
           <p>Um encontro entre luz e delicadeza.<br>Um nome para guardar na memória.</p>
-          <div class="product-meta"><span>Eau de Parfum</span><span>50 ml</span></div>
+          <div class="product-meta"><span>Eau de Parfum</span><span>50 ml</span><span>R$ 349,97</span></div>
           <a class="line-link" href="#detalhes" data-focus="rose">Ver o frasco de perto <span class="line"></span></a>
         </article>
 
@@ -94,7 +96,7 @@
           <span class="eyebrow">Lourée Noir · Masculino</span>
           <h2 data-fly>A força<br><em>do mistério.</em></h2>
           <p>Presença que dispensa palavras.<br>Elegância que encontra o seu próprio tempo.</p>
-          <div class="product-meta"><span>Eau de Parfum</span><span>50 ml</span></div>
+          <div class="product-meta"><span>Eau de Parfum</span><span>50 ml</span><span>R$ 349,97</span></div>
           <a class="line-link" href="#detalhes" data-focus="noir">Ver o frasco de perto <span class="line"></span></a>
         </article>
       </div>
@@ -130,6 +132,14 @@
           <button class="voltar" id="voltar">Voltar às duas caixas <span class="line"></span></button>
         </div>
       </div>
+
+      <!-- compra do perfume em foco -->
+      <div class="compra" id="compra">
+        <span class="compra-linha">Eau de Parfum · 50 ml</span>
+        <p class="compra-preco">R$ 349,97</p>
+        <button class="detail-btn compra-btn" id="addCart"><span class="frame-btn">Adicionar ao carrinho</span></button>
+        <p class="compra-ok" id="compraOk" aria-live="polite"></p>
+      </div>
     </section>
   </main>
 
@@ -146,6 +156,74 @@
     </div>
   </footer>
 
+
+  <!-- sacola -->
+  <div class="sacola-shade" id="sacolaShade" hidden></div>
+  <aside class="sacola" id="sacola" aria-label="Sua sacola" hidden data-lenis-prevent>
+    <div class="sacola-top">
+      <h2>Sua sacola</h2>
+      <button class="sacola-fechar" aria-label="Fechar sacola">Fechar</button>
+    </div>
+    <div class="sacola-lista" id="sacolaLista"></div>
+    <div class="sacola-pe">
+      <div class="sacola-linha"><span>Subtotal</span><strong id="sacolaTotal">R$ 0,00</strong></div>
+      <p class="sacola-nota">Frete calculado na finalização.</p>
+      <button class="detail-btn sacola-fim" id="sacolaFim"><span class="frame-btn">Finalizar compra</span></button>
+    </div>
+  </aside>
+
+  <!-- finalização da compra -->
+  <section class="checkout" id="checkout" aria-label="Finalizar compra" hidden data-lenis-prevent>
+    <div class="ck-in">
+      <button class="voltar ck-voltar" id="ckVoltar"><span class="line"></span> Voltar à loja</button>
+      <h2>Finalizar compra</h2>
+      <div class="ck-grid">
+        <form id="ckForm" novalidate>
+          <fieldset>
+            <legend>Contato</legend>
+            <label>Nome completo<input name="nome" autocomplete="name" required></label>
+            <div class="ck-row">
+              <label>E-mail<input name="email" type="email" autocomplete="email" required></label>
+              <label>Celular<input id="ckTel" name="celular" type="tel" inputmode="numeric" autocomplete="tel" placeholder="(00) 00000-0000" required></label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Entrega</legend>
+            <div class="ck-row">
+              <label class="ck-cep">CEP<input id="ckCep" name="cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" required></label>
+              <label>Endereço<input id="ckRua" name="rua" autocomplete="address-line1" required></label>
+            </div>
+            <div class="ck-row">
+              <label class="ck-num">Número<input id="ckNum" name="numero" required></label>
+              <label>Complemento<input name="complemento" autocomplete="address-line2"></label>
+            </div>
+            <div class="ck-row">
+              <label>Bairro<input id="ckBairro" name="bairro" required></label>
+              <label>Cidade<input id="ckCidade" name="cidade" autocomplete="address-level2" required></label>
+              <label class="ck-uf">UF<input id="ckUf" name="uf" maxlength="2" autocomplete="address-level1" required></label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Frete</legend>
+            <p class="ck-pendente">As opções de frete aparecem aqui assim que o CEP for informado. <em>Em configuração.</em></p>
+          </fieldset>
+          <fieldset>
+            <legend>Pagamento</legend>
+            <p class="ck-pendente">Pix, cartão de crédito e boleto. <em>Em configuração.</em></p>
+          </fieldset>
+          <button class="detail-btn ck-pagar" type="submit"><span class="frame-btn">Ir para o pagamento</span></button>
+          <p class="ck-msg" id="ckMsg" tabindex="-1" hidden>Seus dados estão certos. O pagamento on-line ainda está sendo configurado; em breve você poderá concluir a compra por aqui.</p>
+        </form>
+        <aside class="ck-resumo" aria-label="Resumo do pedido">
+          <h3>Resumo</h3>
+          <div id="ckItens"></div>
+          <div class="sacola-linha"><span>Subtotal</span><span id="ckSub">R$ 0,00</span></div>
+          <div class="sacola-linha"><span>Frete</span><span>a calcular</span></div>
+          <div class="sacola-linha ck-total"><span>Total</span><strong id="ckTotal">R$ 0,00</strong></div>
+        </aside>
+      </div>
+    </div>
+  </section>
 
   <button class="som" id="som" aria-pressed="false" aria-label="Ligar música"><i></i><i></i><i></i><span>Som</span></button>
 
