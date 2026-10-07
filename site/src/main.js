@@ -1,6 +1,7 @@
 import Lenis from 'lenis';
 import { animate, stagger } from 'animejs';
 import { Stage } from './scene.js';
+import { initCaixas } from './caixas.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -46,8 +47,11 @@ $$('a[href^="#"]').forEach((a) => a.addEventListener('click', (e) => {
   if (id.length < 2) return;
   e.preventDefault();
   closeMenu();
-  if (a.dataset.focus) setFocus(a.dataset.focus);
-  lenis.scrollTo(id, { duration: 2.2, easing: (k) => 1 - Math.pow(1 - k, 4) });
+  const focus = a.dataset.focus;
+  lenis.scrollTo(id, {
+    duration: 2.2, easing: (k) => 1 - Math.pow(1 - k, 4),
+    onComplete: () => { if (focus) caixas.abrir(focus); },
+  });
 }));
 
 /* ---------- menu ---------- */
@@ -167,32 +171,8 @@ function updateTags(t) {
   }
 }
 
-/* ---------- "os frascos": foco e arraste ---------- */
-const focusBtns = $$('.detail-options button');
-function setFocus(f) {
-  stage.focus = f;
-  focusBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.focus === f)));
-}
-focusBtns.forEach((b) => b.addEventListener('click', () => setFocus(b.dataset.focus)));
-{
-  const area = $('#detalhes');
-  let down = null;
-  area.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('button')) return;
-    down = e.clientX;
-    area.setPointerCapture(e.pointerId);
-  });
-  area.addEventListener('pointermove', (e) => {
-    if (down === null) return;
-    stage.dragBy(e.clientX - down);
-    down = e.clientX;
-    $('#dragHint').classList.add('gone');
-  });
-  const up = () => { down = null; };
-  area.addEventListener('pointerup', up);
-  area.addEventListener('pointercancel', up);
-  area.style.cursor = 'grab';
-}
+/* ---------- as caixas: foco, borrifo, voz e música ---------- */
+const caixas = initCaixas({ reduce });
 addEventListener('pointermove', (e) => {
   stage.setPointer((e.clientX / innerWidth) * 2 - 1, -((e.clientY / innerHeight) * 2 - 1));
 }, { passive: true });
@@ -273,7 +253,7 @@ function frame(now) {
 
   // não desenha o 3D quando uma seção sólida cobre a tela inteira
   const covers = (sel) => { const r = $(sel).getBoundingClientRect(); return r.top <= 0 && r.bottom >= S.vh; };
-  stage.active = !(covers('#manifesto') || covers('#maison') || covers('footer'));
+  stage.active = !(covers('#manifesto') || covers('#maison') || covers('#detalhes') || covers('footer'));
 
   stage.update(dt);
   stage.render();
