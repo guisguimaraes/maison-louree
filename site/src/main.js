@@ -75,7 +75,6 @@ toggle.addEventListener('click', () => {
   open ? lenis.stop() : lenis.start();
 });
 addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
-$('#year').textContent = new Date().getFullYear();
 
 /* ---------- cena 3D ---------- */
 let realProgress = 0;
@@ -214,7 +213,6 @@ function revealHero() {
   fly($('.hero h1'), { delay: 150, duration: 2200 });
   animate('.hero .eyebrow', { opacity: [0, 1], translateY: [12, 0], duration: 1000, ease: 'outQuart' });
   animate('.hero-description, .hero .line-link', { opacity: [0, 1], translateY: [16, 0], duration: 1200, delay: stagger(140, { start: 750 }), ease: 'outQuart' });
-  animate('.hero-bottom', { opacity: [0, 1], duration: 1400, delay: 1100, ease: 'outQuart' });
   animate('.tag', { opacity: [0, 1], duration: 1200, delay: stagger(200, { start: 1200 }), ease: 'outQuart', onBegin: () => { tagsOn = true; } });
   setTimeout(() => { tagsOn = true; }, 1200);
 }
@@ -264,7 +262,7 @@ function frame(now) {
 
   // não desenha o 3D quando uma seção sólida cobre a tela inteira
   const covers = (sel) => { const r = $(sel).getBoundingClientRect(); return r.top <= 0 && r.bottom >= S.vh; };
-  stage.active = !(covers('#manifesto') || covers('#maison') || covers('footer'));
+  stage.active = !(covers('#manifesto') || covers('#maison'));
 
   stage.update(dt);
   stage.render();
