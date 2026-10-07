@@ -318,7 +318,7 @@ nav { margin-left: auto; }
 
 /* preço e botão ao lado do perfume em foco */
 .compra {
-  position: absolute; right: 4%; top: 58%; width: 240px; text-align: left;
+  position: absolute; right: 4%; top: max(130px, 22%); width: 240px; text-align: left;
   opacity: 0; transform: translateY(18px); pointer-events: none;
   transition: opacity .9s var(--ease), transform .9s var(--ease);
 }
