@@ -223,7 +223,11 @@ async function estatico(req, res) {
   const alvo = path.normalize(path.join(DIST, rel));
   if (!alvo.startsWith(DIST)) { res.writeHead(403); return res.end(); }
   let arquivo = alvo;
-  try { if (!(await stat(arquivo)).isFile()) throw 0; } catch { arquivo = path.join(DIST, 'index.html'); }
+  const existe = async (f) => { try { return (await stat(f)).isFile(); } catch { return false; } };
+  // /historia entrega historia.html; o resto que não existe cai na home
+  if (!(await existe(arquivo))) {
+    arquivo = !path.extname(alvo) && (await existe(`${alvo}.html`)) ? `${alvo}.html` : path.join(DIST, 'index.html');
+  }
   try {
     const dados = await readFile(arquivo);
     const ext = path.extname(arquivo);

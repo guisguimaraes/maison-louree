@@ -202,6 +202,7 @@ const io = new IntersectionObserver((entries) => entries.forEach((e) => {
 }), { threshold: 0.2 });
 io.observe($('.maison-image'));
 io.observe($('.maison-copy'));
+io.observe($('.origem'));
 
 const parallax = $$('[data-parallax]');
 
@@ -262,7 +263,7 @@ function frame(now) {
 
   // não desenha o 3D quando uma seção sólida cobre a tela inteira
   const covers = (sel) => { const r = $(sel).getBoundingClientRect(); return r.top <= 0 && r.bottom >= S.vh; };
-  stage.active = !(covers('#manifesto') || covers('#maison'));
+  stage.active = !(covers('#manifesto') || covers('#origem') || covers('#maison'));
 
   stage.update(dt);
   stage.render();
