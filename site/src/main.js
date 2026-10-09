@@ -204,6 +204,17 @@ io.observe($('.maison-image'));
 io.observe($('.maison-copy'));
 io.observe($('.origem'));
 
+// placa XVI: o pulso se desenha ao aparecer e uma luz rasante passa pelo foil
+const placaIO = new IntersectionObserver(([e]) => {
+  if (!e.isIntersecting) return;
+  placaIO.disconnect();
+  const pulso = $('.placa-pulso');
+  if (reduce) { pulso.style.strokeDashoffset = 0; return; }
+  animate(pulso, { strokeDashoffset: [1, 0], duration: 2200, delay: 500, ease: 'inOutCubic' });
+  animate('#placaLuz', { x: [-140, 480], duration: 7000, loop: true, ease: 'inOutSine' });
+}, { threshold: 0.3 });
+placaIO.observe($('.origem-placa'));
+
 const parallax = $$('[data-parallax]');
 
 /* ---------- entrada da abertura ---------- */

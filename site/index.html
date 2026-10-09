@@ -98,12 +98,46 @@
 
     <!-- 04 A origem: chamada para a página da história -->
     <section class="origem" id="origem">
-      <div class="origem-num reveal" aria-hidden="true">16<small>anos ouvindo corações</small></div>
+      <figure class="origem-placa reveal" aria-hidden="true">
+        <svg viewBox="0 0 340 440">
+          <defs>
+            <linearGradient id="placaGold" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#f3dca4"/><stop offset=".45" stop-color="#d1a862"/><stop offset="1" stop-color="#9a7540"/>
+            </linearGradient>
+            <filter id="placaFoil" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="1.1" result="b"/>
+              <feSpecularLighting in="b" surfaceScale="3" specularConstant="1.3" specularExponent="24" lighting-color="#fff3d2" result="s">
+                <fePointLight id="placaLuz" x="-120" y="40" z="90"/>
+              </feSpecularLighting>
+              <feComposite in="s" in2="SourceAlpha" operator="in" result="s2"/>
+              <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2" seed="9" result="n"/>
+              <feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 .9  0 0 0 0 .7  0 0 0 .08 0" result="n2"/>
+              <feComposite in="n2" in2="SourceAlpha" operator="in" result="grao"/>
+              <feDiffuseLighting in="b" surfaceScale="1.8" diffuseConstant="1" lighting-color="#ffffff" result="d">
+                <feDistantLight azimuth="235" elevation="55"/>
+              </feDiffuseLighting>
+              <feComposite in="SourceGraphic" in2="d" operator="arithmetic" k1=".95" k2=".3" k3="0" k4="0" result="luz"/>
+              <feComposite in="luz" in2="s2" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="brilho"/>
+              <feComposite in="brilho" in2="grao" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+            </filter>
+          </defs>
+          <!-- moldura dupla com cantos chanfrados, como o filete das caixas -->
+          <path class="placa-moldura" d="M18 4H322L336 18V422L322 436H18L4 422V18Z"/>
+          <path class="placa-moldura fina" d="M26 14H314L326 26V414L314 426H26L14 414V26Z"/>
+          <text class="placa-topo" x="170" y="78" text-anchor="middle">Dr. Douglas Lourenço Dias</text>
+          <g filter="url(#placaFoil)" fill="url(#placaGold)">
+            <text class="placa-num" x="170" y="236" text-anchor="middle">XVI</text>
+          </g>
+          <path class="placa-pulso" d="M40 296H128L138 296L146 280L154 296L164 296L174 262L186 322L196 284L204 296H300" pathLength="1"/>
+          <text class="placa-base" x="170" y="356" text-anchor="middle">Anos ouvindo</text>
+          <text class="placa-base placa-base-it" x="170" y="388" text-anchor="middle">corações</text>
+        </svg>
+      </figure>
       <div class="origem-copy">
         <span class="eyebrow reveal">A origem · Timóteo, Vale do Aço</span>
         <h2 data-fly data-fly-view>Um médico passou dezesseis anos <em>ouvindo corações.</em></h2>
         <p class="reveal">Descobriu que eles aceleram antes de a razão entender. Que a memória mora no cheiro. E criou uma casa para guardar isso num frasco.</p>
-        <a class="line-link reveal" href="historia">Conheça a nossa história <span class="line"></span></a>
+        <a class="origem-cta reveal" href="historia"><span>Conheça a nossa história</span><svg viewBox="0 0 10 18" aria-hidden="true"><path d="M1 1l8 8-8 8" fill="none" stroke="currentColor" stroke-width="1"/></svg></a>
       </div>
     </section>
 

@@ -438,18 +438,37 @@ html, body { overflow-x: clip; }
   padding: 170px 8% 160px;
   background: linear-gradient(170deg, #161412 0%, #1f1a17 55%, #2a221d 120%);
 }
-.origem-num {
-  font: 400 clamp(180px, 24vw, 420px)/.78 var(--display); letter-spacing: -.02em;
-  color: transparent; -webkit-text-stroke: 1px rgba(220,195,140,.34);
-  position: relative;
-}
-.origem-num small {
-  position: absolute; left: .08em; bottom: -2.4em; -webkit-text-stroke: 0;
-  font: 500 11px var(--sans); letter-spacing: .24em; text-transform: uppercase; color: var(--gold);
-}
+/* placa em foil dourado: XVI prensado, moldura dupla e o pulso que se desenha */
+.origem-placa { margin: 0 auto; width: min(340px, 100%); position: relative; }
+.origem-placa::before { content: ''; position: absolute; inset: -20%; background: radial-gradient(circle, rgba(201,161,96,.13) 0%, transparent 62%); pointer-events: none; }
+.origem-placa svg { display: block; width: 100%; height: auto; overflow: visible; position: relative; }
+.placa-moldura { fill: none; stroke: rgba(201,161,96,.55); stroke-width: 1; }
+.placa-moldura.fina { stroke: rgba(201,161,96,.28); }
+.placa-topo { font: 500 9.5px var(--sans); letter-spacing: .34em; text-transform: uppercase; fill: var(--gold); }
+.placa-num { font: 400 128px var(--display); letter-spacing: .04em; }
+.placa-pulso { fill: none; stroke: var(--gold-light); stroke-width: 1; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.placa-base { font: 400 15px var(--display); letter-spacing: .34em; text-transform: uppercase; fill: var(--cream); }
+.placa-base-it { font: italic 300 24px var(--serif); letter-spacing: .02em; text-transform: none; fill: var(--gold-light); }
 .origem-copy h2 { font-size: clamp(34px, 3.6vw, 62px); line-height: 1.12; letter-spacing: .06em; margin: 28px 0 34px; }
 .origem-copy p { color: var(--cream-muted); font-size: 15px; max-width: 46ch; }
-.origem-copy .line-link { margin-top: 30px; color: #efdebe; }
+/* chamada para a história: maiúsculas finas, filete que se desenha e a ponta de seta que avança */
+.origem-cta {
+  display: inline-flex; align-items: center; gap: 18px; margin-top: 40px; padding: 14px 0;
+  font: 400 14px var(--display); letter-spacing: .3em; text-transform: uppercase; color: var(--gold-light);
+  transition: color .5s var(--ease);
+}
+.origem-cta span { position: relative; padding-bottom: 6px; }
+.origem-cta span::after {
+  content: ''; position: absolute; left: 0; right: .3em; bottom: 0; height: 1px; background: rgba(220,195,140,.35);
+}
+.origem-cta span::before {
+  content: ''; position: absolute; left: 0; right: .3em; bottom: 0; height: 1px; background: var(--gold-light); z-index: 1;
+  transform: scaleX(0); transform-origin: left; transition: transform .6s var(--ease);
+}
+.origem-cta svg { width: 8px; height: 15px; margin-bottom: 6px; transition: transform .5s var(--ease); }
+.origem-cta:hover { color: #f3e3bb; }
+.origem-cta:hover span::before { transform: scaleX(1); }
+.origem-cta:hover svg { transform: translateX(6px); }
 
 /* ---------- Página da história ---------- */
 .pg-historia { background: #161412; }
@@ -550,7 +569,6 @@ html, body { overflow-x: clip; }
 
 @media (max-width: 860px) {
   .origem { grid-template-columns: 1fr; gap: 70px; padding: 120px 7% 110px; }
-  .origem-num { font-size: 46vw; }
   .hs-selo { right: -18%; width: 84vw; margin-top: -42vw; top: 30%; opacity: .45; }
   .hs-hero-copy { left: 7%; right: 7%; top: auto; bottom: 120px; transform: none; }
   .hs-hero h1 { font-size: clamp(30px, 8.6vw, 46px); white-space: normal; }
